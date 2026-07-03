@@ -368,7 +368,7 @@ function renderChart() {
   }
 }
 
-// ─── Yearly Chart (5Y / ALL) — thin lines + gap fill ───────────────────
+// ─── Yearly Chart (5Y / ALL) — grouped bars + data labels ─────────────
 function renderYearlyChart(ctx, data, range) {
   const filtered = filterByRange(data, range);
   if (filtered.length < 2) return;
@@ -392,38 +392,29 @@ function renderYearlyChart(ctx, data, range) {
     return ((y.last.ihsg / y.first.ihsg) - 1) * 100;
   });
 
-  const isMany = years.length > 6;
+  // Zero-decimal format helper
+  const fmt0 = v => (v >= 0 ? '+' : '') + Math.abs(v).toFixed(0) + '%';
 
   chartInstance = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
       labels,
       datasets: [
         {
           label: 'Portfolio',
           data: portVals,
-          borderColor: '#3fb950',
-          borderWidth: 2,
-          pointRadius: isMany ? 3 : 4,
-          pointBackgroundColor: '#3fb950',
-          pointBorderColor: '#0d1117',
-          pointBorderWidth: 2,
-          pointHoverRadius: 7,
-          tension: 0,
-          fill: false,
+          backgroundColor: portVals.map(v => v >= 0 ? '#3fb950' : '#da3633'),
+          borderColor: '#0d1117',
+          borderWidth: 1,
+          borderRadius: 4,
         },
         {
           label: 'IHSG',
           data: ihsgVals,
-          borderColor: '#58a6ff',
-          borderWidth: 2,
-          pointRadius: isMany ? 3 : 4,
-          pointBackgroundColor: '#58a6ff',
-          pointBorderColor: '#0d1117',
-          pointBorderWidth: 2,
-          pointHoverRadius: 7,
-          tension: 0,
-          fill: false,
+          backgroundColor: ihsgVals.map(v => v >= 0 ? '#58a6ff' : '#d29922'),
+          borderColor: '#0d1117',
+          borderWidth: 1,
+          borderRadius: 4,
         }
       ]
     },
@@ -440,15 +431,14 @@ function renderYearlyChart(ctx, data, range) {
           titleColor: '#e6edf3', bodyColor: '#8b949e',
           callbacks: {
             title: items => items[0].label,
-            label: c => `${c.dataset.label}: ${fmtPct(c.parsed.y)}`
+            label: c => `${c.dataset.label}: ${fmtPct(c.parsed.y, 0)}`
           }
         }
       },
       scales: {
         x: {
           ticks: { color: '#8b949e', font: { size: 12 } },
-          grid: { color: 'rgba(48,54,61,0.3)' },
-          border: { display: false }
+          grid: { display: false }
         },
         y: {
           display: false,
@@ -456,85 +446,46 @@ function renderYearlyChart(ctx, data, range) {
           beginAtZero: false,
         }
       },
-      layout: { padding: { top: 28, right: 12, bottom: 6, left: 12 } }
+      layout: { padding: { top: 30, right: 20, bottom: 6 } }
     },
     plugins: [{
-      id: 'yearlyGapDraw',
+      id: 'barLabels',
       afterDraw(chart) {
         const c = chart.ctx;
-        const m0 = chart.getDatasetMeta(0);
-        const m1 = chart.getDatasetMeta(1);
-        if (!m0.data || !m1.data || m0.data.length === 0) return;
-        const pVals = chart.data.datasets[0].data;
-        const iVals = chart.data.datasets[1].data;
-        const area = chart.chartArea;
-
         c.save();
+        const meta0 = chart.getDatasetMeta(0);
+        const meta1 = chart.getDatasetMeta(1);
+        if (!meta0.data || !meta1.data) { c.restore(); return; }
 
-        // 1. Fill between lines
-        c.beginPath();
-        for (let i = 0; i < m0.data.length; i++) {
-          const pt = m0.data[i];
-          i === 0 ? c.moveTo(pt.x, pt.y) : c.lineTo(pt.x, pt.y);
+        for (let i = 0; i < meta0.data.length; i++) {
+          const pBar = meta0.data[i];
+          const iBar = meta1.data[i];
+          const pVal = chart.data.datasets[0].data[i];
+          const iVal = chart.data.datasets[1].data[i];
+          if (pVal == null || iVal == null) continue;
+
+          // Portfolio bar label: ▲+36% (green/red text above bar)
+          c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.fillStyle = pVal >= 0 ? '#3fb950' : '#f85149';
+          c.textAlign = 'center';
+          c.textBaseline = 'bottom';
+          c.fillText(fmt0(pVal), pBar.x, pBar.y - 3);
+
+          // IHSG bar label: ●+6% (blue/orange text above bar)
+          c.fillStyle = iVal >= 0 ? '#58a6ff' : '#d29922';
+          c.textBaseline = 'bottom';
+          c.fillText(fmt0(iVal), iBar.x, iBar.y - 3);
+
+          // Gap badge above the higher bar
+          const gap = pVal - iVal;
+          const topY = Math.min(pBar.y, iBar.y);
+          c.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.fillStyle = gap >= 0 ? '#3fb950' : '#f85149';
+          c.textBaseline = 'bottom';
+          c.textAlign = 'center';
+          const gLabel = (gap >= 0 ? '\u25B2' : '\u25BC') + ' ' + Math.abs(gap).toFixed(0) + '%';
+          c.fillText(gLabel, (pBar.x + iBar.x) / 2, topY - 22);
         }
-        for (let i = m1.data.length - 1; i >= 0; i--) {
-          c.lineTo(m1.data[i].x, m1.data[i].y);
-        }
-        c.closePath();
-
-        const avgGap = pVals.reduce((s, v, i) => s + (v - iVals[i]), 0) / pVals.length;
-        c.fillStyle = avgGap >= 0 ? 'rgba(63,185,80,0.10)' : 'rgba(248,81,73,0.10)';
-        c.fill();
-
-        // 2. Labels — only on non-dense charts
-        if (isMany) { c.restore(); return; }
-
-        c.textBaseline = 'middle';
-        c.textAlign = 'center';
-
-        for (let i = 0; i < m0.data.length; i++) {
-          const pt = m0.data[i];
-          const ih = m1.data[i];
-          const pv = pVals[i];
-          const iv = iVals[i];
-          if (pv == null || iv == null) continue;
-
-          const gap = pv - iv;
-          const side = i % 2 === 0 ? 1 : -1;
-
-          // Portfolio label: offset right/left of point, above
-          c.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-          c.textAlign = side > 0 ? 'left' : 'right';
-          c.fillStyle = '#3fb950';
-          const pLabel = '\u25B2' + (pv >= 0 ? '+' : '') + pv.toFixed(1) + '%';
-          c.fillText(pLabel, pt.x + side * 6, pt.y - 14);
-
-          // IHSG label: below line
-          c.fillStyle = '#58a6ff';
-          const iLabel = '\u25CF' + (iv >= 0 ? '+' : '') + iv.toFixed(1) + '%';
-          c.fillText(iLabel, ih.x + side * 6, ih.y + 16);
-
-          // Gap badge between lines (only if space enough)
-          const gapPx = Math.abs(pt.y - ih.y);
-          if (gapPx > 24) {
-            const midY = (pt.y + ih.y) / 2;
-            c.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
-            c.textAlign = 'center';
-            const gLabel = (gap >= 0 ? '\u25B2' : '\u25BC') + ' ' + Math.abs(gap).toFixed(1) + '%';
-            const tw = c.measureText(gLabel).width + 10;
-
-            // Badge bg
-            c.fillStyle = gap >= 0 ? 'rgba(63,185,80,0.18)' : 'rgba(248,81,73,0.18)';
-            c.fillRect(pt.x - tw/2, midY - 8, tw, 16);
-
-            c.fillStyle = gap >= 0 ? '#3fb950' : '#f85149';
-            c.fillText(gLabel, pt.x, midY);
-          }
-        }
-
-        // 3. For dense charts: draw gap badge only, no per-series labels
-        // (handled by isMany gate above)
-
         c.restore();
       }
     }]
