@@ -122,47 +122,37 @@
     .kpi-value { font-size: 22px; }
   }
 
-  /* Treemap */
-  .treemap-container {
-    width: 100%; display: flex; flex-direction: column; gap: 4px;
-    height: 420px;
+  /* Sector Bar Chart */
+  .sector-bar-chart {
+    width: 100%; display: flex; flex-direction: column; gap: 8px;
   }
-  .treemap-row {
-    display: flex; gap: 4px; width: 100%;
-    min-height: 0;
+  .sector-bar-row {
+    display: flex; align-items: center; gap: 10px;
   }
-  .treemap-cell {
-    position: relative; border-radius: 6px; overflow: hidden;
-    display: flex; flex-direction: column; justify-content: center;
-    align-items: center;
-    transition: transform .15s, box-shadow .15s; cursor: default;
-    padding: 6px; min-height: 50px; box-sizing: border-box;
+  .sector-bar-label {
+    width: 100px; flex-shrink: 0;
+    font-size: 12px; color: var(--muted); text-align: right;
   }
-  .treemap-cell:hover {
-    transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,.5);
-    z-index: 10;
+  .sector-bar-label .name { color: var(--text); font-weight: 600; }
+  .sector-bar-label .stocks { font-size: 10px; opacity: .7; }
+  .sector-bar-track {
+    flex: 1; height: 28px; border-radius: 6px; overflow: hidden;
+    background: rgba(48,54,61,0.3);
   }
-  .treemap-cell .sector-name {
-    font-size: 14px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.6);
-    text-align: center;
+  .sector-bar-fill {
+    height: 100%; border-radius: 6px; transition: width .3s;
   }
-  .treemap-cell .sector-pct {
-    font-size: 20px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.6);
-    margin-top: 2px;
+  .sector-bar-pct {
+    width: 50px; flex-shrink: 0;
+    font-size: 13px; font-weight: 700; text-align: left;
   }
-  .treemap-cell .sector-stocks {
-    font-size: 11px; opacity: .8; text-shadow: 0 1px 3px rgba(0,0,0,.6);
-    margin-top: 4px; text-align: center;
-  }
-
-  /* Sector Colors — ONLY Cash is green */
-  .sector-Consumer      { background: linear-gradient(135deg, #d29922, #e3b341); }
-  .sector-Manufacture   { background: linear-gradient(135deg, #1f6feb, #58a6ff); }
-  .sector-Energy        { background: linear-gradient(135deg, #9e6a03, #bb8009); }
-  .sector-Financial     { background: linear-gradient(135deg, #8250df, #a371f7); }
-  .sector-Mining        { background: linear-gradient(135deg, #da3633, #f85149); }
-  .sector-Infrastructure { background: linear-gradient(135deg, #1b7c83, #56d4dd); }
-  .sector-Cash          { background: linear-gradient(135deg, #2ea043, #3fb950); }
+  .sector-bar-color-Consumer      { background: linear-gradient(90deg, #d29922, #e3b341); }
+  .sector-bar-color-Manufacture   { background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+  .sector-bar-color-Energy        { background: linear-gradient(90deg, #9e6a03, #bb8009); }
+  .sector-bar-color-Financial     { background: linear-gradient(90deg, #8250df, #a371f7); }
+  .sector-bar-color-Mining        { background: linear-gradient(90deg, #da3633, #f85149); }
+  .sector-bar-color-Infrastructure { background: linear-gradient(90deg, #1b7c83, #56d4dd); }
+  .sector-bar-color-Cash          { background: linear-gradient(90deg, #2ea043, #3fb950); }
 
   /* Loading / Error states */
   .loading {
@@ -218,7 +208,7 @@
   <!-- Treemap Section -->
   <div class="card">
     <div class="card-title">Sector Allocation</div>
-    <div class="treemap-container" id="treemap"></div>
+    <div class="sector-bar-chart" id="sectorChart"></div>
   </div>
 
   <!-- Loading -->
@@ -678,68 +668,32 @@ function renderLineChart(ctx, data, range) {
   });
 }
 
-// ─── Render Treemap ────────────────────────────────────────────────────
+// ─── Render Sector Bar Chart ───────────────────────────────────────────
 function renderTreemap() {
-  const container = document.getElementById('treemap');
+  const container = document.getElementById('sectorChart');
   const sectors = rawData.sectors;
 
+  // Cash first, then rest by size desc
   const cash = sectors.filter(s => s.sector === 'Cash');
   const others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
+  const sorted = [...cash, ...others];
 
   let html = '';
-
-  // Row 1: Cash — full width on top, green
-  for (const s of cash) {
-    const cls = 'sector-' + s.sector.replace(/\s+/g, '');
-    html += `<div class="treemap-row" style="flex:${s.pct} 1 0">
-      <div class="treemap-cell ${cls}" style="width:100%">
-        <div class="sector-name">${s.sector}</div>
-        <div class="sector-pct">${s.pct.toFixed(1)}%</div>
-        <div class="sector-stocks">${s.stocks.join(', ')}</div>
-      </div>
-    </div>`;
+  for (const s of sorted) {
+    const colorClass = 'sector-bar-color-' + s.sector.replace(/\s+/g, '');
+    const stocksStr = s.stocks.join(', ');
+    html += `
+      <div class="sector-bar-row">
+        <div class="sector-bar-label">
+          <div class="name">${s.sector}</div>
+          <div class="stocks">${stocksStr}</div>
+        </div>
+        <div class="sector-bar-track">
+          <div class="sector-bar-fill ${colorClass}" style="width:${s.pct}%"></div>
+        </div>
+        <div class="sector-bar-pct">${s.pct.toFixed(1)}%</div>
+      </div>`;
   }
-
-  // Row 2: Consumer — full width
-  const consumer = others.slice(0, 1);
-  const rest = others.slice(1);
-
-  for (const s of consumer) {
-    const cls = 'sector-' + s.sector.replace(/\s+/g, '');
-    html += `<div class="treemap-row" style="flex:${s.pct} 1 0">
-      <div class="treemap-cell ${cls}" style="width:100%">
-        <div class="sector-name">${s.sector}</div>
-        <div class="sector-pct">${s.pct.toFixed(1)}%</div>
-        <div class="sector-stocks">${s.stocks.join(', ')}</div>
-      </div>
-    </div>`;
-  }
-
-  // Rows 3+: remaining sectors in 2-3 column rows
-  if (rest.length > 0) {
-    // Split rest into rows of 2-3 items each
-    const rows = [];
-    for (let i = 0; i < rest.length; i += 2) {
-      rows.push(rest.slice(i, i + 2));
-    }
-
-    for (const row of rows) {
-      if (row.length === 0) continue;
-      const rowPct = row.reduce((s, x) => s + x.pct, 0);
-      html += `<div class="treemap-row" style="flex:${rowPct} 1 0">`;
-      for (const s of row) {
-        const cls = 'sector-' + s.sector.replace(/\s+/g, '');
-        const w = ((s.pct / rowPct) * 100).toFixed(1);
-        html += `<div class="treemap-cell ${cls}" style="flex:0 0 ${w}%">
-          <div class="sector-name">${s.sector}</div>
-          <div class="sector-pct">${s.pct.toFixed(1)}%</div>
-          <div class="sector-stocks">${s.stocks.join(', ')}</div>
-        </div>`;
-      }
-      html += '</div>';
-    }
-  }
-
   container.innerHTML = html;
 }
 
