@@ -368,7 +368,7 @@ function renderChart() {
   }
 }
 
-// ─── Yearly Chart (5Y / ALL) — grouped bars + data labels ─────────────
+// ─── Yearly Chart (5Y / ALL) — thin lines + data labels ───────────────
 function renderYearlyChart(ctx, data, range) {
   const filtered = filterByRange(data, range);
   if (filtered.length < 2) return;
@@ -392,29 +392,38 @@ function renderYearlyChart(ctx, data, range) {
     return ((y.last.ihsg / y.first.ihsg) - 1) * 100;
   });
 
-  // Zero-decimal format helper
   const fmt0 = v => (v >= 0 ? '+' : '') + Math.abs(v).toFixed(0) + '%';
 
   chartInstance = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels,
       datasets: [
         {
           label: 'Portfolio',
           data: portVals,
-          backgroundColor: portVals.map(v => v >= 0 ? '#3fb950' : '#da3633'),
-          borderColor: '#0d1117',
-          borderWidth: 1,
-          borderRadius: 4,
+          borderColor: '#3fb950',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#3fb950',
+          pointBorderColor: '#0d1117',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          tension: 0,
+          fill: false,
         },
         {
           label: 'IHSG',
           data: ihsgVals,
-          backgroundColor: ihsgVals.map(v => v >= 0 ? '#58a6ff' : '#d29922'),
-          borderColor: '#0d1117',
-          borderWidth: 1,
-          borderRadius: 4,
+          borderColor: '#58a6ff',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#58a6ff',
+          pointBorderColor: '#0d1117',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          tension: 0,
+          fill: false,
         }
       ]
     },
@@ -446,45 +455,36 @@ function renderYearlyChart(ctx, data, range) {
           beginAtZero: false,
         }
       },
-      layout: { padding: { top: 30, right: 20, bottom: 6 } }
+      layout: { padding: { top: 28, right: 20, bottom: 6 } }
     },
     plugins: [{
-      id: 'barLabels',
+      id: 'yearlyLabels',
       afterDraw(chart) {
         const c = chart.ctx;
         c.save();
         const meta0 = chart.getDatasetMeta(0);
         const meta1 = chart.getDatasetMeta(1);
-        if (!meta0.data || !meta1.data) { c.restore(); return; }
+        if (!meta0.data || !meta1.data || meta0.data.length === 0) { c.restore(); return; }
+
+        c.textBaseline = 'middle';
 
         for (let i = 0; i < meta0.data.length; i++) {
-          const pBar = meta0.data[i];
-          const iBar = meta1.data[i];
-          const pVal = chart.data.datasets[0].data[i];
-          const iVal = chart.data.datasets[1].data[i];
-          if (pVal == null || iVal == null) continue;
+          const pt = meta0.data[i];
+          const ih = meta1.data[i];
+          const pv = chart.data.datasets[0].data[i];
+          const iv = chart.data.datasets[1].data[i];
+          if (pv == null || iv == null) continue;
 
-          // Portfolio bar label: ▲+36% (green/red text above bar)
-          c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
-          c.fillStyle = pVal >= 0 ? '#3fb950' : '#f85149';
-          c.textAlign = 'center';
-          c.textBaseline = 'bottom';
-          c.fillText(fmt0(pVal), pBar.x, pBar.y - 3);
+          // Portfolio label
+          c.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.fillStyle = '#3fb950';
+          c.textAlign = 'left';
+          c.fillText(fmt0(pv), pt.x + 6, pt.y - 10);
 
-          // IHSG bar label: ●+6% (blue/orange text above bar)
-          c.fillStyle = iVal >= 0 ? '#58a6ff' : '#d29922';
-          c.textBaseline = 'bottom';
-          c.fillText(fmt0(iVal), iBar.x, iBar.y - 3);
-
-          // Gap badge above the higher bar
-          const gap = pVal - iVal;
-          const topY = Math.min(pBar.y, iBar.y);
-          c.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
-          c.fillStyle = gap >= 0 ? '#3fb950' : '#f85149';
-          c.textBaseline = 'bottom';
-          c.textAlign = 'center';
-          const gLabel = (gap >= 0 ? '\u25B2' : '\u25BC') + ' ' + Math.abs(gap).toFixed(0) + '%';
-          c.fillText(gLabel, (pBar.x + iBar.x) / 2, topY - 22);
+          // IHSG label
+          c.fillStyle = '#58a6ff';
+          c.textAlign = 'left';
+          c.fillText(fmt0(iv), ih.x + 6, ih.y + 12);
         }
         c.restore();
       }
