@@ -402,18 +402,39 @@ function renderChart() {
 
   if (chartInstance) chartInstance.destroy();
 
-  // Plugin: draw month labels spanning weeks + year labels below
+  // Determine label mode: months for short ranges, year-only for multi-year
+  const showMonths = (range === 'ytd' || range === '1y');
   const MONTHS = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  const axisLabelPlugin = {
-    id: 'axisLabels',
+
+  const axisPlugin = {
+    id: 'axisPlugin',
     afterDraw(chart) {
       const xAxis = chart.scales.x;
-      if (!xAxis || !xAxis.ticks.length) return;
       const labels = chart.data.labels;
-      if (!labels || labels.length === 0) return;
+      if (!xAxis || !labels || labels.length === 0) return;
       const area = chart.chartArea;
+      const ctx = chart.ctx;
+      ctx.save();
 
-      // Group labels by month transitions
+      // ── 1. Year separator lines ──
+      ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]);
+      let prevYear = labels[0].slice(0, 4);
+      for (let i = 1; i < labels.length; i++) {
+        const yr = labels[i].slice(0, 4);
+        if (yr !== prevYear) {
+          const x = xAxis.getPixelForValue(labels[i]);
+          ctx.beginPath();
+          ctx.moveTo(x, area.top);
+          ctx.lineTo(x, area.bottom);
+          ctx.stroke();
+          prevYear = yr;
+        }
+      }
+      ctx.setLineDash([]);
+
+      // ── 2. X-axis labels ──
       let months = [];
       let prevKey = null;
       for (let i = 0; i < labels.length; i++) {
@@ -425,63 +446,79 @@ function renderChart() {
           prevKey = key;
         }
       }
-
-      // Assign end indices
       for (let i = 0; i < months.length; i++) {
-        if (i < months.length - 1) {
-          months[i].endIdx = months[i + 1].startIdx - 1;
-        } else {
-          months[i].endIdx = labels.length - 1;
-        }
+        months[i].endIdx = i < months.length - 1 ? months[i + 1].startIdx - 1 : labels.length - 1;
       }
 
-      // Group months into years for year labels
+      // Group months into years
       let years = [];
-      let prevYear = null;
+      let prevY = null;
       for (const m of months) {
-        if (m.year !== prevYear) {
+        if (m.year !== prevY) {
           years.push({ year: m.year, startIdx: m.startIdx, endIdx: m.endIdx });
-          prevYear = m.year;
+          prevY = m.year;
         } else {
           years[years.length - 1].endIdx = m.endIdx;
         }
       }
 
-      const ctx2 = chart.ctx;
-      ctx2.save();
-
-      // Month labels (top row)
-      ctx2.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx2.fillStyle = '#8b949e';
-      ctx2.textAlign = 'center';
-      const monthY = area.bottom + 2;
-
-      for (const m of months) {
-        const sx = xAxis.getPixelForValue(m.startIdx);
-        const ex = xAxis.getPixelForValue(Math.min(m.endIdx, labels.length - 1));
-        const cx = (sx + ex) / 2;
-        ctx2.fillText(MONTHS[m.month] || '', cx, monthY);
+      if (showMonths) {
+        // Month labels centered over their weeks
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#8b949e';
+        ctx.textAlign = 'center';
+        const monthY = area.bottom + 2;
+        for (const m of months) {
+          const sx = xAxis.getPixelForValue(labels[m.startIdx]);
+          const ex = xAxis.getPixelForValue(labels[Math.min(m.endIdx, labels.length - 1)]);
+          ctx.fillText(MONTHS[m.month] || '', (sx + ex) / 2, monthY);
+        }
+        // Year below months
+        ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#6e7681';
+        const yearY = area.bottom + 16;
+        for (const y of years) {
+          const sx = xAxis.getPixelForValue(labels[y.startIdx]);
+          const ex = xAxis.getPixelForValue(labels[Math.min(y.endIdx, labels.length - 1)]);
+          ctx.fillText(y.year, (sx + ex) / 2, yearY);
+        }
+      } else {
+        // Year-only labels, larger and centered
+        ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#8b949e';
+        ctx.textAlign = 'center';
+        const yearY = area.bottom + 4;
+        for (const y of years) {
+          const sx = xAxis.getPixelForValue(labels[y.startIdx]);
+          const ex = xAxis.getPixelForValue(labels[Math.min(y.endIdx, labels.length - 1)]);
+          ctx.fillText(y.year, (sx + ex) / 2, yearY);
+        }
       }
 
-      // Year labels (bottom row)
-      ctx2.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx2.fillStyle = '#6e7681';
-      const yearY = monthY + 14;
-
-      for (const y of years) {
-        const sx = xAxis.getPixelForValue(y.startIdx);
-        const ex = xAxis.getPixelForValue(Math.min(y.endIdx, labels.length - 1));
-        const cx = (sx + ex) / 2;
-        ctx2.fillText(y.year, cx, yearY);
+      // ── 3. Last-point data labels ──
+      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textBaseline = 'middle';
+      for (let d = 0; d < chart.data.datasets.length; d++) {
+        const meta = chart.getDatasetMeta(d);
+        const pts = meta.data;
+        if (!pts || pts.length === 0) continue;
+        const last = pts[pts.length - 1];
+        if (last == null || last.y == null) continue;
+        const val = chart.data.datasets[d].data[last.index];
+        if (val == null) continue;
+        ctx.fillStyle = chart.data.datasets[d].borderColor;
+        ctx.textAlign = 'left';
+        const label = (val >= 0 ? '+' : '') + val.toFixed(1) + '%';
+        ctx.fillText(label, last.x + 7, last.y);
       }
 
-      ctx2.restore();
+      ctx.restore();
     }
   };
 
   chartInstance = new Chart(ctx, {
     type: 'line',
-    plugins: [axisLabelPlugin],
+    plugins: [axisPlugin],
     data: {
       labels,
       datasets: [
