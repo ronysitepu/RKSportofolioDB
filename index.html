@@ -125,14 +125,16 @@
   /* Treemap */
   .treemap-container {
     width: 100%; display: flex; flex-direction: column; gap: 4px;
+    min-height: 300px;
   }
   .treemap-row {
     display: flex; gap: 4px; width: 100%;
+    flex: 1;
   }
   .treemap-cell {
     position: relative; border-radius: 6px; overflow: hidden;
     display: flex; flex-direction: column; justify-content: center;
-    align-items: center; min-height: 90px;
+    align-items: center;
     transition: transform .15s, box-shadow .15s; cursor: default;
     padding: 8px;
   }
@@ -153,12 +155,12 @@
     margin-top: 4px; text-align: center;
   }
 
-  /* Sector Colors */
-  .sector-Consumer      { background: linear-gradient(135deg, #2ea043, #238636); }
+  /* Sector Colors — ONLY Cash is green */
+  .sector-Consumer      { background: linear-gradient(135deg, #d29922, #e3b341); }
   .sector-Manufacture   { background: linear-gradient(135deg, #1f6feb, #58a6ff); }
   .sector-Energy        { background: linear-gradient(135deg, #9e6a03, #bb8009); }
   .sector-Financial     { background: linear-gradient(135deg, #8250df, #a371f7); }
-  .sector-Mining        { background: linear-gradient(135deg, #d29922, #e3b341); }
+  .sector-Mining        { background: linear-gradient(135deg, #da3633, #f85149); }
   .sector-Infrastructure { background: linear-gradient(135deg, #1b7c83, #56d4dd); }
   .sector-Cash          { background: linear-gradient(135deg, #2ea043, #3fb950); }
 
@@ -206,12 +208,7 @@
         <button data-range="5y">5Y</button>
         <button data-range="all" class="active">ALL</button>
       </div>
-      <span class="label" style="margin-left:16px">Aggregate:</span>
-      <div class="btn-group" id="aggBtns">
-        <button data-agg="weekly" class="active">Weekly</button>
-        <button data-agg="monthly">Monthly</button>
-        <button data-agg="yearly">Yearly</button>
-      </div>
+      <span class="label" style="margin-left:16px" id="chartModeLabel">Weekly data</span>
     </div>
     <div class="chart-wrapper">
       <canvas id="lineChart"></canvas>
@@ -267,46 +264,32 @@ function fmtNum(v) {
   return v.toString();
 }
 
-function fmtPct(v,d){if(v==null)return'—';d=d||1;const s=v>=0?'+':'';return s+v.toFixed(d)+'%'}
-
-// Support both compact (array) and legacy (object) historical format
 function normalizeHistorical(hist) {
   if (!hist || hist.length === 0) return [];
   if (Array.isArray(hist[0])) {
-    // Compact format: [date, nab, ihsg, ret_inception, ihsg_inception, cagr, leverage]
     return hist.map(r => ({
-      date: r[0],
-      nab: r[1],
-      ihsg: r[2],
-      ret_inception: r[3],
-      ihsg_inception: r[4],
-      cagr: r[5],
-      leverage: r[6]
+      date: r[0], nab: r[1], ihsg: r[2],
+      ret_inception: r[3], ihsg_inception: r[4],
+      cagr: r[5], leverage: r[6]
     }));
   }
   return hist;
 }
 
-function aggregateData(data,mode){
+function getWeekKey(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const t = new Date(d);
+  t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+  const yr = t.getFullYear();
+  const jan1 = new Date(yr, 0, 1);
+  const wk = Math.ceil((((t - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+  return yr + '-W' + String(wk).padStart(2, '0');
+}
+
+function aggregateWeekly(data) {
   const map = {};
   for (const d of data) {
-    const dt = new Date(d.date + 'T00:00:00');
-    let key;
-    if (mode === 'weekly') {
-      // ISO week key: move to Thursday of same week, then compute week number
-      const t = new Date(dt);
-      t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
-      const yr = t.getFullYear();
-      const jan1 = new Date(yr, 0, 1);
-      const wk = Math.ceil((((t - jan1) / 86400000) + jan1.getDay() + 1) / 7);
-      key = yr + '-W' + String(wk).padStart(2, '0');
-    } else if (mode === 'monthly') {
-      key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
-    } else {
-      key = '' + dt.getFullYear();
-    }
-    // Keep the last entry for each period (most recent data)
-    map[key] = d;
+    map[getWeekKey(d.date)] = d;
   }
   return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -337,17 +320,15 @@ function renderKPIs() {
   const ytdEl = document.getElementById('kpiYtd');
   const levEl = document.getElementById('kpiLev');
 
-  // Return
   retEl.textContent = fmtPct(l.ret_inception);
   retEl.className = 'kpi-value ' + (l.ret_inception >= 0 ? 'kpi-positive' : 'kpi-negative');
   retSub.textContent = `vs IHSG: ${fmtPct(l.ihsg_inception)}`;
   retSub.style.color = l.ihsg_inception >= 0 ? 'var(--green)' : 'var(--red)';
 
-  // CAGR
   cagrEl.textContent = fmtPct(l.cagr);
   cagrEl.className = 'kpi-value ' + (l.cagr >= 0 ? 'kpi-positive' : 'kpi-warning');
 
-  // YTD — compute from NAB data instead of relying on sheet's ytd_ret
+  // YTD — compute from NAB
   const hist = normalizeHistorical(rawData.historical);
   let ytdVal = null, ihsgYtdVal = null;
   const currentYear = new Date().getFullYear().toString();
@@ -373,7 +354,6 @@ function renderKPIs() {
   ytdSub.textContent = `vs IHSG: ${fmtPct(ihsgYtdVal)}`;
   ytdSub.style.color = ihsgYtdVal >= 0 ? 'var(--green)' : 'var(--red)';
 
-  // Leverage
   levEl.textContent = fmtPct(l.leverage);
   levEl.className = 'kpi-value kpi-warning';
 }
@@ -381,15 +361,93 @@ function renderKPIs() {
 // ─── Render Chart ──────────────────────────────────────────────────────
 function renderChart() {
   const range = document.querySelector('#rangeBtns .active').dataset.range;
-  const agg = document.querySelector('#aggBtns .active').dataset.agg;
   const data = normalizeHistorical(rawData.historical);
+  const isBar = (range === '5y' || range === 'all');
+  const ctx = document.getElementById('lineChart').getContext('2d');
 
-  let filtered = filterByRange(data, range);
-  let aggregated = aggregateData(filtered, agg);
+  // Update mode label
+  document.getElementById('chartModeLabel').textContent =
+    isBar ? 'Yearly bars' : 'Weekly data';
 
+  if (chartInstance) chartInstance.destroy();
+
+  if (isBar) {
+    renderBarChart(ctx, data, range);
+  } else {
+    renderLineChart(ctx, data, range);
+  }
+}
+
+// ─── Bar Chart (5Y / ALL) ─────────────────────────────────────────────
+function renderBarChart(ctx, data, range) {
+  const filtered = filterByRange(data, range);
+  if (filtered.length < 2) return;
+
+  // Aggregate by year
+  const yearly = {};
+  for (const d of filtered) {
+    const yr = d.date.slice(0, 4);
+    if (!yearly[yr]) yearly[yr] = { first: d, last: d };
+    else yearly[yr].last = d;
+  }
+
+  const years = Object.keys(yearly).sort();
+  const labels = years;
+  const portData = years.map(yr => {
+    const y = yearly[yr];
+    return ((y.last.nab / y.first.nab) - 1) * 100;
+  });
+  const ihsgData = years.map(yr => {
+    const y = yearly[yr];
+    return ((y.last.ihsg / y.first.ihsg) - 1) * 100;
+  });
+  const gapData = years.map((yr, i) => portData[i] - ihsgData[i]);
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Portfolio', data: portData, backgroundColor: '#3fb950', borderRadius: 4 },
+        { label: 'IHSG', data: ihsgData, backgroundColor: '#58a6ff', borderRadius: 4 },
+        { label: 'Gap', data: gapData, backgroundColor: '#d29922', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { color: '#8b949e', font: { size: 12 }, usePointStyle: true, padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+          titleColor: '#e6edf3', bodyColor: '#8b949e',
+          callbacks: { label: c => `${c.dataset.label}: ${fmtPct(c.parsed.y)}` }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8b949e', font: { size: 12 } },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#8b949e', callback: v => v + '%', font: { size: 11 } },
+          grid: { color: 'rgba(48,54,61,0.4)' }
+        }
+      },
+      layout: { padding: { right: 20, bottom: 6 } }
+    }
+  });
+}
+
+// ─── Line Chart (YTD / 1Y / 3Y) ──────────────────────────────────────────
+function renderLineChart(ctx, data, range) {
+  const filtered = filterByRange(data, range);
+  let aggregated = aggregateWeekly(filtered);
   if (aggregated.length === 0) return;
 
-  // Compute % change from first point in the range using NAB & IHSG
   const first = aggregated[0];
   const firstNab = first.nab;
   const firstIhsg = first.ihsg;
@@ -404,127 +462,21 @@ function renderChart() {
     return ((d.ihsg / firstIhsg) - 1) * 100;
   });
 
-  const ctx = document.getElementById('lineChart').getContext('2d');
-
-  if (chartInstance) chartInstance.destroy();
-
-  // Determine label mode: months for short ranges, year-only for multi-year
   const showMonths = (range === 'ytd' || range === '1y');
   const MONTHS = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-  const axisPlugin = {
-    id: 'axisPlugin',
-    afterDraw(chart) {
-      const xAxis = chart.scales.x;
-      const labels = chart.data.labels;
-      if (!xAxis || !labels || labels.length === 0) return;
-      const area = chart.chartArea;
-      const ctx = chart.ctx;
-      ctx.save();
-
-      // ── 1. Year separator lines ──
-      ctx.strokeStyle = 'rgba(139,148,158,0.7)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([]);
-      let prevYear = labels[0].slice(0, 4);
-      for (let i = 1; i < labels.length; i++) {
-        const yr = labels[i].slice(0, 4);
-        if (yr !== prevYear) {
-          const x = xAxis.getPixelForValue(labels[i]);
-          ctx.beginPath();
-          ctx.moveTo(x, area.top);
-          ctx.lineTo(x, area.bottom);
-          ctx.stroke();
-          prevYear = yr;
-        }
-      }
-      ctx.setLineDash([]);
-
-      // ── 2. X-axis labels ──
-      let months = [];
-      let prevKey = null;
-      for (let i = 0; i < labels.length; i++) {
-        const yr = labels[i].slice(0, 4);
-        const mo = labels[i].slice(5, 7);
-        const key = yr + mo;
-        if (key !== prevKey) {
-          months.push({ year: yr, month: parseInt(mo), startIdx: i });
-          prevKey = key;
-        }
-      }
-      for (let i = 0; i < months.length; i++) {
-        months[i].endIdx = i < months.length - 1 ? months[i + 1].startIdx - 1 : labels.length - 1;
-      }
-
-      // Group months into years
-      let years = [];
-      let prevY = null;
-      for (const m of months) {
-        if (m.year !== prevY) {
-          years.push({ year: m.year, startIdx: m.startIdx, endIdx: m.endIdx });
-          prevY = m.year;
-        } else {
-          years[years.length - 1].endIdx = m.endIdx;
-        }
-      }
-
-      if (showMonths) {
-        // Month labels centered over their weeks
-        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-        ctx.fillStyle = '#8b949e';
-        ctx.textAlign = 'center';
-        const monthY = area.bottom + 2;
-        for (const m of months) {
-          const sx = xAxis.getPixelForValue(labels[m.startIdx]);
-          const ex = xAxis.getPixelForValue(labels[Math.min(m.endIdx, labels.length - 1)]);
-          ctx.fillText(MONTHS[m.month] || '', (sx + ex) / 2, monthY);
-        }
-        // Year below months
-        ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
-        ctx.fillStyle = '#6e7681';
-        const yearY = area.bottom + 16;
-        for (const y of years) {
-          const sx = xAxis.getPixelForValue(labels[y.startIdx]);
-          const ex = xAxis.getPixelForValue(labels[Math.min(y.endIdx, labels.length - 1)]);
-          ctx.fillText(y.year, (sx + ex) / 2, yearY);
-        }
-      } else {
-        // Year-only labels, larger and centered
-        ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
-        ctx.fillStyle = '#8b949e';
-        ctx.textAlign = 'center';
-        const yearY = area.bottom + 4;
-        for (const y of years) {
-          const sx = xAxis.getPixelForValue(labels[y.startIdx]);
-          const ex = xAxis.getPixelForValue(labels[Math.min(y.endIdx, labels.length - 1)]);
-          ctx.fillText(y.year, (sx + ex) / 2, yearY);
-        }
-      }
-
-      // ── 3. Last-point data labels ──
-      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.textBaseline = 'middle';
-      for (let d = 0; d < chart.data.datasets.length; d++) {
-        const meta = chart.getDatasetMeta(d);
-        const pts = meta.data;
-        if (!pts || pts.length === 0) continue;
-        const last = pts[pts.length - 1];
-        if (last == null || last.y == null) continue;
-        const val = chart.data.datasets[d].data[last.index];
-        if (val == null) continue;
-        ctx.fillStyle = chart.data.datasets[d].borderColor;
-        ctx.textAlign = 'left';
-        const label = (val >= 0 ? '+' : '') + val.toFixed(1) + '%';
-        ctx.fillText(label, last.x + 7, last.y);
-      }
-
-      ctx.restore();
+  const lastNonEmpty = (arr) => {
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (arr[i] != null) return { val: arr[i], idx: i };
     }
+    return null;
   };
+
+  const lastP = lastNonEmpty(portReturns);
+  const lastI = lastNonEmpty(ihsgReturns);
 
   chartInstance = new Chart(ctx, {
     type: 'line',
-    plugins: [axisPlugin],
     data: {
       labels,
       datasets: [
@@ -533,10 +485,9 @@ function renderChart() {
           data: portReturns,
           borderColor: '#3fb950',
           backgroundColor: 'rgba(63,185,80,0.08)',
-          fill: true,
-          tension: 0.2,
+          fill: true, tension: 0.2,
           pointRadius: labels.length > 100 ? 0 : 2,
-          pointHoverRadius: 4,
+          pointHoverRadius: 5,
           borderWidth: 2,
         },
         {
@@ -544,10 +495,9 @@ function renderChart() {
           data: ihsgReturns,
           borderColor: '#58a6ff',
           backgroundColor: 'rgba(88,166,255,0.08)',
-          fill: true,
-          tension: 0.2,
+          fill: true, tension: 0.2,
           pointRadius: labels.length > 100 ? 0 : 2,
-          pointHoverRadius: 4,
+          pointHoverRadius: 5,
           borderWidth: 2,
         }
       ]
@@ -562,39 +512,123 @@ function renderChart() {
           labels: { color: '#8b949e', font: { size: 12 }, usePointStyle: true, padding: 16 }
         },
         tooltip: {
-          backgroundColor: '#161b22',
-          borderColor: '#30363d',
-          borderWidth: 1,
-          titleColor: '#e6edf3',
-          bodyColor: '#8b949e',
-          callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${fmtPct(ctx.parsed.y)}`
-          }
+          backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+          titleColor: '#e6edf3', bodyColor: '#8b949e',
+          callbacks: { label: c => `${c.dataset.label}: ${fmtPct(c.parsed.y)}` }
         }
       },
-      layout: {
-        padding: { right: 65, bottom: 6 }
-      },
+      layout: { padding: { right: 75, bottom: 6 } },
       scales: {
         x: {
-          ticks: {
-            color: '#8b949e',
-            maxTicksLimit: 24,
-            font: { size: 9 },
-            callback() { return ''; }
-          },
+          ticks: { color: '#8b949e', maxTicksLimit: 24, font: { size: 9 }, callback() { return ''; } },
           grid: { display: false }
         },
         y: {
-          ticks: {
-            color: '#8b949e',
-            callback: v => v + '%',
-            font: { size: 11 }
-          },
+          ticks: { color: '#8b949e', callback: v => v + '%', font: { size: 11 } },
           grid: { color: 'rgba(48,54,61,0.4)' }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'lineLabels',
+      afterDraw(chart) {
+        const xAxis = chart.scales.x;
+        const yAxis = chart.scales.y;
+        const chartLabels = chart.data.labels;
+        if (!xAxis || !yAxis || !chartLabels || chartLabels.length === 0) return;
+        const area = chart.chartArea;
+        const c = chart.ctx;
+        c.save();
+
+        // Year separator lines
+        c.strokeStyle = 'rgba(139,148,158,0.7)';
+        c.lineWidth = 1;
+        let prevYear = chartLabels[0].slice(0, 4);
+        for (let i = 1; i < chartLabels.length; i++) {
+          const yr = chartLabels[i].slice(0, 4);
+          if (yr !== prevYear) {
+            const x = xAxis.getPixelForValue(chartLabels[i]);
+            c.beginPath();
+            c.moveTo(x, area.top);
+            c.lineTo(x, area.bottom);
+            c.stroke();
+            prevYear = yr;
+          }
+        }
+
+        // X-axis labels (months/years)
+        let months = [], prevKey = null;
+        for (let i = 0; i < chartLabels.length; i++) {
+          const key = chartLabels[i].slice(0, 7);
+          if (key !== prevKey) {
+            months.push({ key, year: key.slice(0,4), month: parseInt(key.slice(5,7)), startIdx: i });
+            prevKey = key;
+          }
+        }
+        for (let i = 0; i < months.length; i++) {
+          months[i].endIdx = i < months.length - 1 ? months[i+1].startIdx - 1 : chartLabels.length - 1;
+        }
+        let years = [];
+        let prevYr = null;
+        for (const m of months) {
+          if (m.year !== prevYr) {
+            years.push({ year: m.year, startIdx: m.startIdx, endIdx: m.endIdx });
+            prevYr = m.year;
+          } else years[years.length-1].endIdx = m.endIdx;
+        }
+
+        if (showMonths) {
+          c.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.fillStyle = '#8b949e';
+          c.textAlign = 'center';
+          for (const m of months) {
+            const sx = xAxis.getPixelForValue(chartLabels[m.startIdx]);
+            const ex = xAxis.getPixelForValue(chartLabels[Math.min(m.endIdx, chartLabels.length-1)]);
+            c.fillText(MONTHS[m.month] || '', (sx+ex)/2, area.bottom + 2);
+          }
+          c.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.fillStyle = '#6e7681';
+          for (const y of years) {
+            const sx = xAxis.getPixelForValue(chartLabels[y.startIdx]);
+            const ex = xAxis.getPixelForValue(chartLabels[Math.min(y.endIdx, chartLabels.length-1)]);
+            c.fillText(y.year, (sx+ex)/2, area.bottom + 16);
+          }
+        } else {
+          c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.fillStyle = '#8b949e';
+          c.textAlign = 'center';
+          for (const y of years) {
+            const sx = xAxis.getPixelForValue(chartLabels[y.startIdx]);
+            const ex = xAxis.getPixelForValue(chartLabels[Math.min(y.endIdx, chartLabels.length-1)]);
+            c.fillText(y.year, (sx+ex)/2, area.bottom + 4);
+          }
+        }
+
+        // Last-point data labels using scale-based positioning
+        c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        c.textBaseline = 'middle';
+        const datasets = chart.data.datasets;
+        for (let d = 0; d < datasets.length; d++) {
+          const arr = datasets[d].data;
+          // Find last non-null value
+          let lastIdx = -1, lastVal = null;
+          for (let i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] != null) { lastIdx = i; lastVal = arr[i]; break; }
+          }
+          if (lastIdx < 0) continue;
+          const lbl = chartLabels[lastIdx];
+          if (!lbl) continue;
+          const px = xAxis.getPixelForValue(lbl);
+          const py = yAxis.getPixelForValue(lastVal);
+          if (isNaN(px) || isNaN(py)) continue;
+          c.fillStyle = datasets[d].borderColor;
+          c.textAlign = 'left';
+          const label = (lastVal >= 0 ? '+' : '') + lastVal.toFixed(1) + '%';
+          c.fillText(label, px + 7, py);
+        }
+        c.restore();
+      }
+    }]
   });
 }
 
@@ -604,61 +638,25 @@ function renderTreemap() {
   const sectors = rawData.sectors;
 
   // Cash always first, then sort rest by pct desc
-  let cash = sectors.filter(s => s.sector === 'Cash');
-  let others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
+  const cash = sectors.filter(s => s.sector === 'Cash');
+  const others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
   const sorted = [...cash, ...others];
 
-  // Squarified treemap: arrange into rows
-  // Each row fills the full width, cell width proportional to its % within the row
-  const totalPct = sorted.reduce((s, x) => s + x.pct, 0);
-
+  // Each sector gets its own row with flex proportional to its % of total
+  // This ensures area = sector pct accurately
   let html = '';
-  let remaining = [...sorted];
-
-  while (remaining.length > 0) {
-    // Determine how many items fit in this row
-    // Aim for roughly square cells: add items until width/height ratio > 1
-    const row = [];
-    let rowPct = 0;
-
-    // Take first item (always starts a row)
-    row.push(remaining[0]);
-    rowPct = remaining[0].pct;
-
-    // Try adding more items, checking aspect ratio
-    for (let i = 1; i < remaining.length; i++) {
-      const testPct = rowPct + remaining[i].pct;
-      const rowHeight = rowPct / totalPct;
-      // Worst aspect ratio in the row
-      // simple heuristic: if largest cell in row would be too wide, stop
-      if (i === 1) {
-        // Check if adding second item improves aspect ratio
-        const ratio = testPct / rowPct; // how much bigger the first would be
-        if (ratio > 2.5) break; // first item dominates, keep it alone
-      }
-      row.push(remaining[i]);
-      rowPct = testPct;
-    }
-
-    if (row.length === 0 || rowPct === 0) break;
-    remaining = remaining.slice(row.length);
-
-    html += '<div class="treemap-row">';
-    for (const sector of row) {
-      const widthPct = (sector.pct / rowPct) * 100;
-      const sectorClass = 'sector-' + sector.sector.replace(/\s+/g, '');
-      const stocksStr = sector.stocks.join(', ');
-      html += `
-        <div class="treemap-cell ${sectorClass}" style="width: ${widthPct}%">
+  for (const sector of sorted) {
+    const sectorClass = 'sector-' + sector.sector.replace(/\s+/g, '');
+    const stocksStr = sector.stocks.join(', ');
+    html += `
+      <div class="treemap-row" style="flex:${sector.pct}">
+        <div class="treemap-cell ${sectorClass}" style="width:100%">
           <div class="sector-name">${sector.sector}</div>
           <div class="sector-pct">${sector.pct.toFixed(1)}%</div>
           <div class="sector-stocks">${stocksStr}</div>
         </div>
-      `;
-    }
-    html += '</div>';
+      </div>`;
   }
-
   container.innerHTML = html;
 }
 
@@ -666,7 +664,6 @@ function renderTreemap() {
 function renderDashboard() {
   document.getElementById('updateTime').textContent =
     new Date(rawData.generated_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-
   renderKPIs();
   renderChart();
   renderTreemap();
@@ -676,14 +673,6 @@ function renderDashboard() {
 document.querySelectorAll('#rangeBtns button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#rangeBtns button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderChart();
-  });
-});
-
-document.querySelectorAll('#aggBtns button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#aggBtns button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderChart();
   });
