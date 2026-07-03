@@ -750,12 +750,35 @@ function renderTreemap() {
   // Normal sectors (excl Cash) sorted by size
   const others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
   const cash = sectors.filter(s => s.sector === 'Cash');
-  const cashPct = cash.length > 0 ? cash[0].pct : 0;
+
+  // Stacked bar: Leverage | Equity | Cash (on top, scaled to 100%)
   const lev = rawData.latest.leverage || 0;
-  const totalOther = others.reduce((s, x) => s + x.pct, 0);
-  const equityExCash = totalOther;
+  const cashPct = cash.length > 0 ? cash[0].pct : 0;
+  const equityExCash = Math.max(0, 100 - lev - cashPct);
 
   let html = '';
+  html += `
+    <div class="stacked-bar-row">
+      <div class="stacked-bar-label">
+        <div class="title">Structure</div>
+        <div>Lvg / Eq / Cash</div>
+      </div>
+      <div class="stacked-bar-track">
+        <div class="stacked-bar-segment" style="width:${lev}%;background:linear-gradient(90deg,#da3633,#f85149)">
+          <span class="name">Leverage</span>
+          <span class="pct">${lev.toFixed(1)}%</span>
+        </div>
+        <div class="stacked-bar-segment" style="width:${equityExCash}%;background:linear-gradient(90deg,#1f6feb,#58a6ff)">
+          <span class="name">Equity</span>
+          <span class="pct">${equityExCash.toFixed(1)}%</span>
+        </div>
+        <div class="stacked-bar-segment" style="width:${cashPct}%;background:linear-gradient(90deg,#2ea043,#3fb950)">
+          <span class="name">Cash</span>
+          <span class="pct">${cashPct.toFixed(1)}%</span>
+        </div>
+      </div>
+    </div>`;
+
   for (const s of others) {
     const colorClass = 'sector-bar-color-' + s.sector.replace(/\s+/g, '');
     const stocksStr = s.stocks.join(', ');
@@ -771,34 +794,6 @@ function renderTreemap() {
         <div class="sector-bar-pct">${s.pct.toFixed(1)}%</div>
       </div>`;
   }
-
-  // Stacked bar: Leverage | Equity | Cash
-  const total = lev + equityExCash + cashPct;
-  const levPct = total > 0 ? (lev / total) * 100 : 0;
-  const eqPct  = total > 0 ? (equityExCash / total) * 100 : 0;
-  const caPct  = total > 0 ? (cashPct / total) * 100 : 0;
-
-  html += `
-    <div class="stacked-bar-row">
-      <div class="stacked-bar-label">
-        <div class="title">Struct.</div>
-        <div>Lvg / Eq / Cash</div>
-      </div>
-      <div class="stacked-bar-track">
-        <div class="stacked-bar-segment" style="width:${levPct}%;background:linear-gradient(90deg,#da3633,#f85149)">
-          <span class="name">Leverage</span>
-          <span class="pct">${lev.toFixed(1)}%</span>
-        </div>
-        <div class="stacked-bar-segment" style="width:${eqPct}%;background:linear-gradient(90deg,#1f6feb,#58a6ff)">
-          <span class="name">Equity</span>
-          <span class="pct">${equityExCash.toFixed(1)}%</span>
-        </div>
-        <div class="stacked-bar-segment" style="width:${caPct}%;background:linear-gradient(90deg,#2ea043,#3fb950)">
-          <span class="name">Cash</span>
-          <span class="pct">${cashPct.toFixed(1)}%</span>
-        </div>
-      </div>
-    </div>`;
 
   container.innerHTML = html;
 }
