@@ -198,14 +198,14 @@
         <button data-range="5y">5Y</button>
         <button data-range="all" class="active">ALL</button>
       </div>
-      <span class="label" style="margin-left:16px" id="chartModeLabel">Weekly data</span>
+      <span class="label" style="margin-left:16px" id="chartModeLabel">Yearly lines</span>
     </div>
     <div class="chart-wrapper">
       <canvas id="lineChart"></canvas>
     </div>
   </div>
 
-  <!-- Treemap Section -->
+  <!-- Sector -->
   <div class="card">
     <div class="card-title">Sector Allocation</div>
     <div class="sector-bar-chart" id="sectorChart"></div>
@@ -242,14 +242,15 @@ async function loadData() {
 }
 
 // ─── Format Helpers ────────────────────────────────────────────────────
-function fmtPct(v, decimals = 1) {
-  if (v == null) return '—';
+function fmtPct(v, decimals) {
+  if (v == null) return '\u2014';
+  decimals = decimals || 1;
   const sign = v >= 0 ? '+' : '';
   return `${sign}${v.toFixed(decimals)}%`;
 }
 
 function fmtNum(v) {
-  if (v == null) return '—';
+  if (v == null) return '\u2014';
   if (v >= 1000) return v.toLocaleString('id-ID');
   return v.toString();
 }
@@ -355,21 +356,20 @@ function renderChart() {
   const isBar = (range === '5y' || range === 'all');
   const ctx = document.getElementById('lineChart').getContext('2d');
 
-  // Update mode label
   document.getElementById('chartModeLabel').textContent =
-    isBar ? 'Yearly bars' : 'Weekly data';
+    isBar ? 'Yearly lines' : 'Weekly data';
 
   if (chartInstance) chartInstance.destroy();
 
   if (isBar) {
-    renderBarChart(ctx, data, range);
+    renderYearlyChart(ctx, data, range);
   } else {
     renderLineChart(ctx, data, range);
   }
 }
 
-// ─── Bar Chart (5Y / ALL) ─────────────────────────────────────────────
-function renderBarChart(ctx, data, range) {
+// ─── Yearly Chart (5Y / ALL) — thin lines + gap fill ───────────────────
+function renderYearlyChart(ctx, data, range) {
   const filtered = filterByRange(data, range);
   if (filtered.length < 2) return;
 
@@ -383,22 +383,48 @@ function renderBarChart(ctx, data, range) {
 
   const years = Object.keys(yearly).sort();
   const labels = years;
-  const portData = years.map(yr => {
+  const portVals = years.map(yr => {
     const y = yearly[yr];
     return ((y.last.nab / y.first.nab) - 1) * 100;
   });
-  const ihsgData = years.map(yr => {
+  const ihsgVals = years.map(yr => {
     const y = yearly[yr];
     return ((y.last.ihsg / y.first.ihsg) - 1) * 100;
   });
 
+  const isMany = years.length > 6;
+
   chartInstance = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels,
       datasets: [
-        { label: 'Portfolio', data: portData, backgroundColor: '#3fb950', borderRadius: 4 },
-        { label: 'IHSG', data: ihsgData, backgroundColor: '#58a6ff', borderRadius: 4 },
+        {
+          label: 'Portfolio',
+          data: portVals,
+          borderColor: '#3fb950',
+          borderWidth: 2,
+          pointRadius: isMany ? 3 : 4,
+          pointBackgroundColor: '#3fb950',
+          pointBorderColor: '#0d1117',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          tension: 0,
+          fill: false,
+        },
+        {
+          label: 'IHSG',
+          data: ihsgVals,
+          borderColor: '#58a6ff',
+          borderWidth: 2,
+          pointRadius: isMany ? 3 : 4,
+          pointBackgroundColor: '#58a6ff',
+          pointBorderColor: '#0d1117',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          tension: 0,
+          fill: false,
+        }
       ]
     },
     options: {
@@ -412,66 +438,103 @@ function renderBarChart(ctx, data, range) {
         tooltip: {
           backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
           titleColor: '#e6edf3', bodyColor: '#8b949e',
-          callbacks: { label: c => `${c.dataset.label}: ${fmtPct(c.parsed.y)}` }
+          callbacks: {
+            title: items => items[0].label,
+            label: c => `${c.dataset.label}: ${fmtPct(c.parsed.y)}`
+          }
         }
       },
       scales: {
         x: {
           ticks: { color: '#8b949e', font: { size: 12 } },
-          grid: { display: false }
+          grid: { color: 'rgba(48,54,61,0.3)' },
+          border: { display: false }
         },
         y: {
-          ticks: { display: false },
-          grid: { color: 'rgba(48,54,61,0.4)' }
+          display: false,
+          grid: { display: false },
+          beginAtZero: false,
         }
       },
-      layout: { padding: { top: 30, right: 20, bottom: 6 } }
+      layout: { padding: { top: 28, right: 12, bottom: 6, left: 12 } }
     },
     plugins: [{
-      id: 'barLabels',
+      id: 'yearlyGapDraw',
       afterDraw(chart) {
         const c = chart.ctx;
+        const m0 = chart.getDatasetMeta(0);
+        const m1 = chart.getDatasetMeta(1);
+        if (!m0.data || !m1.data || m0.data.length === 0) return;
+        const pVals = chart.data.datasets[0].data;
+        const iVals = chart.data.datasets[1].data;
+        const area = chart.chartArea;
+
         c.save();
-        const meta0 = chart.getDatasetMeta(0);
-        const meta1 = chart.getDatasetMeta(1);
-        if (!meta0.data || !meta1.data) { c.restore(); return; }
 
-        for (let i = 0; i < meta0.data.length; i++) {
-          const pBar = meta0.data[i];
-          const iBar = meta1.data[i];
-          const pVal = chart.data.datasets[0].data[i];
-          const iVal = chart.data.datasets[1].data[i];
+        // 1. Fill between lines
+        c.beginPath();
+        for (let i = 0; i < m0.data.length; i++) {
+          const pt = m0.data[i];
+          i === 0 ? c.moveTo(pt.x, pt.y) : c.lineTo(pt.x, pt.y);
+        }
+        for (let i = m1.data.length - 1; i >= 0; i--) {
+          c.lineTo(m1.data[i].x, m1.data[i].y);
+        }
+        c.closePath();
 
-          // Portfolio bar label: ▲ value%
-          if (pBar && pBar.y != null && pVal != null) {
-            c.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
-            c.fillStyle = '#3fb950';
+        const avgGap = pVals.reduce((s, v, i) => s + (v - iVals[i]), 0) / pVals.length;
+        c.fillStyle = avgGap >= 0 ? 'rgba(63,185,80,0.10)' : 'rgba(248,81,73,0.10)';
+        c.fill();
+
+        // 2. Labels — only on non-dense charts
+        if (isMany) { c.restore(); return; }
+
+        c.textBaseline = 'middle';
+        c.textAlign = 'center';
+
+        for (let i = 0; i < m0.data.length; i++) {
+          const pt = m0.data[i];
+          const ih = m1.data[i];
+          const pv = pVals[i];
+          const iv = iVals[i];
+          if (pv == null || iv == null) continue;
+
+          const gap = pv - iv;
+          const side = i % 2 === 0 ? 1 : -1;
+
+          // Portfolio label: offset right/left of point, above
+          c.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+          c.textAlign = side > 0 ? 'left' : 'right';
+          c.fillStyle = '#3fb950';
+          const pLabel = '\u25B2' + (pv >= 0 ? '+' : '') + pv.toFixed(1) + '%';
+          c.fillText(pLabel, pt.x + side * 6, pt.y - 14);
+
+          // IHSG label: below line
+          c.fillStyle = '#58a6ff';
+          const iLabel = '\u25CF' + (iv >= 0 ? '+' : '') + iv.toFixed(1) + '%';
+          c.fillText(iLabel, ih.x + side * 6, ih.y + 16);
+
+          // Gap badge between lines (only if space enough)
+          const gapPx = Math.abs(pt.y - ih.y);
+          if (gapPx > 24) {
+            const midY = (pt.y + ih.y) / 2;
+            c.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
             c.textAlign = 'center';
-            c.textBaseline = 'bottom';
-            c.fillText('▲ ' + (pVal >= 0 ? '+' : '') + pVal.toFixed(1) + '%', pBar.x, pBar.y - 4);
-          }
+            const gLabel = (gap >= 0 ? '\u25B2' : '\u25BC') + ' ' + Math.abs(gap).toFixed(1) + '%';
+            const tw = c.measureText(gLabel).width + 10;
 
-          // IHSG bar label: ● value%
-          if (iBar && iBar.y != null && iVal != null) {
-            c.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
-            c.fillStyle = '#58a6ff';
-            c.textAlign = 'center';
-            c.textBaseline = 'bottom';
-            c.fillText('● ' + (iVal >= 0 ? '+' : '') + iVal.toFixed(1) + '%', iBar.x, iBar.y - 4);
-          }
+            // Badge bg
+            c.fillStyle = gap >= 0 ? 'rgba(63,185,80,0.18)' : 'rgba(248,81,73,0.18)';
+            c.fillRect(pt.x - tw/2, midY - 8, tw, 16);
 
-          // Gap indicator above the higher bar
-          if (pVal != null && iVal != null && pBar && iBar) {
-            const gap = pVal - iVal;
-            const topY = Math.min(pBar.y, iBar.y);
-            c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
             c.fillStyle = gap >= 0 ? '#3fb950' : '#f85149';
-            c.textAlign = 'center';
-            c.textBaseline = 'bottom';
-            const gLabel = (gap >= 0 ? '▲' : '▼') + ' ' + (gap >= 0 ? '+' : '') + gap.toFixed(1) + '%';
-            c.fillText(gLabel, (pBar.x + iBar.x) / 2, topY - 22);
+            c.fillText(gLabel, pt.x, midY);
           }
         }
+
+        // 3. For dense charts: draw gap badge only, no per-series labels
+        // (handled by isMany gate above)
+
         c.restore();
       }
     }]
@@ -592,7 +655,7 @@ function renderLineChart(ctx, data, range) {
           }
         }
 
-        // X-axis labels (months/years)
+        // X-axis labels
         let months = [], prevKey = null;
         for (let i = 0; i < chartLabels.length; i++) {
           const key = chartLabels[i].slice(0, 7);
@@ -640,13 +703,12 @@ function renderLineChart(ctx, data, range) {
           }
         }
 
-        // Last-point data labels using scale-based positioning
+        // Last-point data labels
         c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
         c.textBaseline = 'middle';
         const datasets = chart.data.datasets;
         for (let d = 0; d < datasets.length; d++) {
           const arr = datasets[d].data;
-          // Find last non-null value
           let lastIdx = -1, lastVal = null;
           for (let i = arr.length - 1; i >= 0; i--) {
             if (arr[i] != null) { lastIdx = i; lastVal = arr[i]; break; }
@@ -673,7 +735,6 @@ function renderTreemap() {
   const container = document.getElementById('sectorChart');
   const sectors = rawData.sectors;
 
-  // Cash first, then rest by size desc
   const cash = sectors.filter(s => s.sector === 'Cash');
   const others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
   const sorted = [...cash, ...others];
