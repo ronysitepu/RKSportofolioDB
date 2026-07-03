@@ -218,6 +218,7 @@
         <button data-range="ytd">YTD</button>
         <button data-range="1y">1Y</button>
         <button data-range="3y">3Y</button>
+        <span style="width:1px;background:var(--border);margin:4px 0;flex-shrink:0"></span>
         <button data-range="5y">5Y</button>
         <button data-range="all" class="active">ALL</button>
       </div>
@@ -380,7 +381,7 @@ function renderChart() {
   const ctx = document.getElementById('lineChart').getContext('2d');
 
   document.getElementById('chartModeLabel').textContent =
-    isBar ? 'Yearly lines' : 'Weekly data';
+    isBar ? 'Yearly performance line' : 'Weekly data';
 
   if (chartInstance) chartInstance.destroy();
 
@@ -768,13 +769,13 @@ function renderTreemap() {
           <span class="name">Leverage</span>
           <span class="pct">${lev.toFixed(1)}%</span>
         </div>
-        <div class="stacked-bar-segment" style="width:${equityExCash}%;background:linear-gradient(90deg,#1f6feb,#58a6ff)">
-          <span class="name">Equity</span>
-          <span class="pct">${equityExCash.toFixed(1)}%</span>
-        </div>
         <div class="stacked-bar-segment" style="width:${cashPct}%;background:linear-gradient(90deg,#2ea043,#3fb950)">
           <span class="name">Cash</span>
           <span class="pct">${cashPct.toFixed(1)}%</span>
+        </div>
+        <div class="stacked-bar-segment" style="width:${equityExCash}%;background:linear-gradient(90deg,#1f6feb,#58a6ff)">
+          <span class="name">Equity</span>
+          <span class="pct">${equityExCash.toFixed(1)}%</span>
         </div>
       </div>
       <div style="width:50px;flex-shrink:0"></div>
