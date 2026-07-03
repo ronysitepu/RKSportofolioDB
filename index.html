@@ -63,9 +63,7 @@
     font-size: 12px; color: var(--muted); text-transform: uppercase;
     letter-spacing: .5px; margin-bottom: 4px;
   }
-  .kpi-value {
-    font-size: 28px; font-weight: 700; line-height: 1.2;
-  }
+  .kpi-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
   .kpi-sub {
     font-size: 12px; color: var(--muted); margin-top: 2px;
   }
@@ -114,12 +112,12 @@
     position: relative; width: 100%;
   }
   #lineChart {
-    width: 100% !important; max-height: 400px;
+    width: 100% !important; height: 550px !important; max-height: none;
   }
   @media (max-width: 700px) {
     .card { padding: 12px; }
     .chart-controls { gap: 4px; }
-    #lineChart { max-height: 520px; }
+    #lineChart { height: 620px !important; }
     .kpi-card { padding: 12px 14px; }
     .kpi-value { font-size: 22px; }
   }
@@ -192,7 +190,7 @@
   <div class="kpi-grid" id="kpiGrid">
     <div class="kpi-card"><div class="kpi-label">Return Since 2019</div><div class="kpi-value" id="kpiReturn">—</div><div class="kpi-sub" id="kpiReturnSub">vs IHSG: —</div></div>
     <div class="kpi-card"><div class="kpi-label">CAGR</div><div class="kpi-value" id="kpiCagr">—</div><div class="kpi-sub">Annualized return</div></div>
-    <div class="kpi-card"><div class="kpi-label">YTD Return</div><div class="kpi-value" id="kpiYtd">—</div><div class="kpi-sub">2026 year to date</div></div>
+    <div class="kpi-card"><div class="kpi-label">YTD Return</div><div class="kpi-value" id="kpiYtd">—</div><div class="kpi-sub" id="kpiYtdSub">vs IHSG: —</div></div>
     <div class="kpi-card"><div class="kpi-label">Leverage</div><div class="kpi-value" id="kpiLev">—</div><div class="kpi-sub">Current leverage ratio</div></div>
   </div>
 
@@ -345,20 +343,29 @@ function renderKPIs() {
 
   // YTD — compute from NAB data instead of relying on sheet's ytd_ret
   const hist = normalizeHistorical(rawData.historical);
-  let ytdVal = null;
+  let ytdVal = null, ihsgYtdVal = null;
   const currentYear = new Date().getFullYear().toString();
-  let yearStartNab = null;
+  let yearStartNab = null, yearStartIhsg = null;
   for (const d of hist) {
     if (d.date && d.date.startsWith(currentYear)) {
-      if (yearStartNab == null && d.nab != null) yearStartNab = d.nab;
+      if (yearStartNab == null && d.nab != null) {
+        yearStartNab = d.nab;
+        yearStartIhsg = d.ihsg;
+      }
       break;
     }
   }
   if (yearStartNab != null && l.nab != null) {
     ytdVal = (l.nab / yearStartNab - 1) * 100;
   }
+  if (yearStartIhsg != null && l.ihsg != null) {
+    ihsgYtdVal = (l.ihsg / yearStartIhsg - 1) * 100;
+  }
   ytdEl.textContent = fmtPct(ytdVal);
   ytdEl.className = 'kpi-value ' + (ytdVal >= 0 ? 'kpi-positive' : 'kpi-negative');
+  const ytdSub = document.getElementById('kpiYtdSub');
+  ytdSub.textContent = `vs IHSG: ${fmtPct(ihsgYtdVal)}`;
+  ytdSub.style.color = ihsgYtdVal >= 0 ? 'var(--green)' : 'var(--red)';
 
   // Leverage
   levEl.textContent = fmtPct(l.leverage);
@@ -395,54 +402,86 @@ function renderChart() {
 
   if (chartInstance) chartInstance.destroy();
 
-  // Plugin: draw year labels below month ticks
-  const yearLabelPlugin = {
-    id: 'yearLabels',
+  // Plugin: draw month labels spanning weeks + year labels below
+  const MONTHS = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const axisLabelPlugin = {
+    id: 'axisLabels',
     afterDraw(chart) {
       const xAxis = chart.scales.x;
       if (!xAxis || !xAxis.ticks.length) return;
-      const yearLabelY = chart.chartArea.bottom + 24;
       const labels = chart.data.labels;
       if (!labels || labels.length === 0) return;
+      const area = chart.chartArea;
 
-      // Find year boundaries from labels
-      let years = [];
-      let prevYear = null;
+      // Group labels by month transitions
+      let months = [];
+      let prevKey = null;
       for (let i = 0; i < labels.length; i++) {
         const yr = labels[i].slice(0, 4);
-        if (yr !== prevYear) {
-          years.push({ year: yr, startIdx: i });
-          prevYear = yr;
+        const mo = labels[i].slice(5, 7);
+        const key = yr + mo;
+        if (key !== prevKey) {
+          months.push({ year: yr, month: parseInt(mo), startIdx: i });
+          prevKey = key;
         }
       }
 
-      // Map last tick to last index
-      const lastIdx = labels.length - 1;
-      const lastYear = years[years.length - 1];
-      if (lastYear) lastYear.endIdx = lastIdx;
-      for (let i = 0; i < years.length - 1; i++) {
-        years[i].endIdx = years[i + 1].startIdx - 1;
+      // Assign end indices
+      for (let i = 0; i < months.length; i++) {
+        if (i < months.length - 1) {
+          months[i].endIdx = months[i + 1].startIdx - 1;
+        } else {
+          months[i].endIdx = labels.length - 1;
+        }
+      }
+
+      // Group months into years for year labels
+      let years = [];
+      let prevYear = null;
+      for (const m of months) {
+        if (m.year !== prevYear) {
+          years.push({ year: m.year, startIdx: m.startIdx, endIdx: m.endIdx });
+          prevYear = m.year;
+        } else {
+          years[years.length - 1].endIdx = m.endIdx;
+        }
       }
 
       const ctx2 = chart.ctx;
       ctx2.save();
+
+      // Month labels (top row)
       ctx2.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx2.fillStyle = '#6e7681';
+      ctx2.fillStyle = '#8b949e';
       ctx2.textAlign = 'center';
+      const monthY = area.bottom + 2;
+
+      for (const m of months) {
+        const sx = xAxis.getPixelForValue(m.startIdx);
+        const ex = xAxis.getPixelForValue(Math.min(m.endIdx, labels.length - 1));
+        const cx = (sx + ex) / 2;
+        ctx2.fillText(MONTHS[m.month] || '', cx, monthY);
+      }
+
+      // Year labels (bottom row)
+      ctx2.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx2.fillStyle = '#6e7681';
+      const yearY = monthY + 14;
 
       for (const y of years) {
-        const startX = xAxis.getPixelForValue(y.startIdx);
-        const endX = xAxis.getPixelForValue(Math.min(y.endIdx, labels.length - 1));
-        const cx = (startX + endX) / 2;
-        ctx2.fillText(y.year, cx, yearLabelY);
+        const sx = xAxis.getPixelForValue(y.startIdx);
+        const ex = xAxis.getPixelForValue(Math.min(y.endIdx, labels.length - 1));
+        const cx = (sx + ex) / 2;
+        ctx2.fillText(y.year, cx, yearY);
       }
+
       ctx2.restore();
     }
   };
 
   chartInstance = new Chart(ctx, {
     type: 'line',
-    plugins: [yearLabelPlugin],
+    plugins: [axisLabelPlugin],
     data: {
       labels,
       datasets: [
@@ -491,19 +530,15 @@ function renderChart() {
         }
       },
       layout: {
-        padding: { bottom: 30 }
+        padding: { bottom: 6 }
       },
       scales: {
         x: {
           ticks: {
             color: '#8b949e',
-            maxTicksLimit: 18,
-            font: { size: 11 },
-            callback(val, idx, ticks) {
-              const label = this.getLabelForValue(val);
-              if (!label) return '';
-              return label.slice(5, 7); // "MM" only
-            }
+            maxTicksLimit: 24,
+            font: { size: 9 },
+            callback() { return ''; }
           },
           grid: { color: 'rgba(48,54,61,0.4)' }
         },
