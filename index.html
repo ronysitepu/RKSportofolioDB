@@ -116,6 +116,13 @@
   #lineChart {
     width: 100% !important; max-height: 400px;
   }
+  @media (max-width: 700px) {
+    .card { padding: 12px; }
+    .chart-controls { gap: 4px; }
+    #lineChart { max-height: 520px; }
+    .kpi-card { padding: 12px 14px; }
+    .kpi-value { font-size: 22px; }
+  }
 
   /* Treemap */
   .treemap-container {
@@ -388,8 +395,54 @@ function renderChart() {
 
   if (chartInstance) chartInstance.destroy();
 
+  // Plugin: draw year labels below month ticks
+  const yearLabelPlugin = {
+    id: 'yearLabels',
+    afterDraw(chart) {
+      const xAxis = chart.scales.x;
+      if (!xAxis || !xAxis.ticks.length) return;
+      const yearLabelY = chart.chartArea.bottom + 24;
+      const labels = chart.data.labels;
+      if (!labels || labels.length === 0) return;
+
+      // Find year boundaries from labels
+      let years = [];
+      let prevYear = null;
+      for (let i = 0; i < labels.length; i++) {
+        const yr = labels[i].slice(0, 4);
+        if (yr !== prevYear) {
+          years.push({ year: yr, startIdx: i });
+          prevYear = yr;
+        }
+      }
+
+      // Map last tick to last index
+      const lastIdx = labels.length - 1;
+      const lastYear = years[years.length - 1];
+      if (lastYear) lastYear.endIdx = lastIdx;
+      for (let i = 0; i < years.length - 1; i++) {
+        years[i].endIdx = years[i + 1].startIdx - 1;
+      }
+
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      ctx2.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx2.fillStyle = '#6e7681';
+      ctx2.textAlign = 'center';
+
+      for (const y of years) {
+        const startX = xAxis.getPixelForValue(y.startIdx);
+        const endX = xAxis.getPixelForValue(Math.min(y.endIdx, labels.length - 1));
+        const cx = (startX + endX) / 2;
+        ctx2.fillText(y.year, cx, yearLabelY);
+      }
+      ctx2.restore();
+    }
+  };
+
   chartInstance = new Chart(ctx, {
     type: 'line',
+    plugins: [yearLabelPlugin],
     data: {
       labels,
       datasets: [
@@ -437,12 +490,20 @@ function renderChart() {
           }
         }
       },
+      layout: {
+        padding: { bottom: 30 }
+      },
       scales: {
         x: {
           ticks: {
             color: '#8b949e',
-            maxTicksLimit: 12,
-            font: { size: 11 }
+            maxTicksLimit: 18,
+            font: { size: 11 },
+            callback(val, idx, ticks) {
+              const label = this.getLabelForValue(val);
+              if (!label) return '';
+              return label.slice(5, 7); // "MM" only
+            }
           },
           grid: { color: 'rgba(48,54,61,0.4)' }
         },
