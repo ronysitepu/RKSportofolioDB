@@ -683,26 +683,63 @@ function renderTreemap() {
   const container = document.getElementById('treemap');
   const sectors = rawData.sectors;
 
-  // Cash always first, then sort rest by pct desc
   const cash = sectors.filter(s => s.sector === 'Cash');
   const others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
-  const sorted = [...cash, ...others];
 
-  // Each sector gets its own row with flex proportional to its % of total
-  // This ensures area = sector pct accurately
   let html = '';
-  for (const sector of sorted) {
-    const sectorClass = 'sector-' + sector.sector.replace(/\s+/g, '');
-    const stocksStr = sector.stocks.join(', ');
-    html += `
-      <div class="treemap-row" style="flex:${sector.pct} 1 0">
-        <div class="treemap-cell ${sectorClass}" style="width:100%">
-          <div class="sector-name">${sector.sector}</div>
-          <div class="sector-pct">${sector.pct.toFixed(1)}%</div>
-          <div class="sector-stocks">${stocksStr}</div>
-        </div>
-      </div>`;
+
+  // Row 1: Cash — full width on top, green
+  for (const s of cash) {
+    const cls = 'sector-' + s.sector.replace(/\s+/g, '');
+    html += `<div class="treemap-row" style="flex:${s.pct} 1 0">
+      <div class="treemap-cell ${cls}" style="width:100%">
+        <div class="sector-name">${s.sector}</div>
+        <div class="sector-pct">${s.pct.toFixed(1)}%</div>
+        <div class="sector-stocks">${s.stocks.join(', ')}</div>
+      </div>
+    </div>`;
   }
+
+  // Row 2: Consumer — full width
+  const consumer = others.slice(0, 1);
+  const rest = others.slice(1);
+
+  for (const s of consumer) {
+    const cls = 'sector-' + s.sector.replace(/\s+/g, '');
+    html += `<div class="treemap-row" style="flex:${s.pct} 1 0">
+      <div class="treemap-cell ${cls}" style="width:100%">
+        <div class="sector-name">${s.sector}</div>
+        <div class="sector-pct">${s.pct.toFixed(1)}%</div>
+        <div class="sector-stocks">${s.stocks.join(', ')}</div>
+      </div>
+    </div>`;
+  }
+
+  // Rows 3+: remaining sectors in 2-3 column rows
+  if (rest.length > 0) {
+    // Split rest into rows of 2-3 items each
+    const rows = [];
+    for (let i = 0; i < rest.length; i += 2) {
+      rows.push(rest.slice(i, i + 2));
+    }
+
+    for (const row of rows) {
+      if (row.length === 0) continue;
+      const rowPct = row.reduce((s, x) => s + x.pct, 0);
+      html += `<div class="treemap-row" style="flex:${rowPct} 1 0">`;
+      for (const s of row) {
+        const cls = 'sector-' + s.sector.replace(/\s+/g, '');
+        const w = ((s.pct / rowPct) * 100).toFixed(1);
+        html += `<div class="treemap-cell ${cls}" style="width:${w}%">
+          <div class="sector-name">${s.sector}</div>
+          <div class="sector-pct">${s.pct.toFixed(1)}%</div>
+          <div class="sector-stocks">${s.stocks.join(', ')}</div>
+        </div>`;
+      }
+      html += '</div>';
+    }
+  }
+
   container.innerHTML = html;
 }
 
