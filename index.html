@@ -195,6 +195,7 @@
     <div class="chart-controls">
       <span class="label">Range:</span>
       <div class="btn-group" id="rangeBtns">
+        <button data-range="ytd">YTD</button>
         <button data-range="1y">1Y</button>
         <button data-range="3y">3Y</button>
         <button data-range="5y">5Y</button>
@@ -304,9 +305,15 @@ function filterByRange(data, range) {
   if (range === 'all') return data;
   const now = new Date(data[data.length - 1].date + 'T00:00:00');
   let start = new Date(now);
-  if (range === '1y') { start.setFullYear(start.getFullYear() - 1); }
-  else if (range === '3y') { start.setFullYear(start.getFullYear() - 3); }
-  else if (range === '5y') { start.setFullYear(start.getFullYear() - 5); }
+  if (range === 'ytd') {
+    start = new Date(now.getFullYear(), 0, 1);
+  } else if (range === '1y') {
+    start.setFullYear(start.getFullYear() - 1);
+  } else if (range === '3y') {
+    start.setFullYear(start.getFullYear() - 3);
+  } else if (range === '5y') {
+    start.setFullYear(start.getFullYear() - 5);
+  }
   return data.filter(d => d.date >= start.toISOString().slice(0, 10));
 }
 
@@ -329,9 +336,22 @@ function renderKPIs() {
   cagrEl.textContent = fmtPct(l.cagr);
   cagrEl.className = 'kpi-value ' + (l.cagr >= 0 ? 'kpi-positive' : 'kpi-warning');
 
-  // YTD
-  ytdEl.textContent = fmtPct(l.ytd_ret);
-  ytdEl.className = 'kpi-value ' + (l.ytd_ret >= 0 ? 'kpi-positive' : 'kpi-negative');
+  // YTD — compute from NAB data instead of relying on sheet's ytd_ret
+  const hist = normalizeHistorical(rawData.historical);
+  let ytdVal = null;
+  const currentYear = new Date().getFullYear().toString();
+  let yearStartNab = null;
+  for (const d of hist) {
+    if (d.date && d.date.startsWith(currentYear)) {
+      if (yearStartNab == null && d.nab != null) yearStartNab = d.nab;
+      break;
+    }
+  }
+  if (yearStartNab != null && l.nab != null) {
+    ytdVal = (l.nab / yearStartNab - 1) * 100;
+  }
+  ytdEl.textContent = fmtPct(ytdVal);
+  ytdEl.className = 'kpi-value ' + (ytdVal >= 0 ? 'kpi-positive' : 'kpi-negative');
 
   // Leverage
   levEl.textContent = fmtPct(l.leverage);
@@ -347,24 +367,21 @@ function renderChart() {
   let filtered = filterByRange(data, range);
   let aggregated = aggregateData(filtered, agg);
 
-  // Use ret_inception and ihsg_inception for the chart
-  const labels = aggregated.map(d => d.date);
-  const portReturns = aggregated.map(d => d.ret_inception ?? null);
-  const ihsgReturns = aggregated.map(d => d.ihsg_inception ?? null);
+  if (aggregated.length === 0) return;
 
-  // YTD: compute return relative to start of current year
-  const currentYear = new Date().getFullYear().toString();
-  let yearStartRet = null;
-  for (const d of aggregated) {
-    if (d.date && d.date.startsWith(currentYear)) {
-      yearStartRet = d.ret_inception;
-      break;
-    }
-  }
-  const ytdReturns = aggregated.map(d => {
-    if (!d.date || !d.date.startsWith(currentYear)) return null;
-    if (yearStartRet == null || d.ret_inception == null) return null;
-    return d.ret_inception - yearStartRet;
+  // Compute % change from first point in the range using NAB & IHSG
+  const first = aggregated[0];
+  const firstNab = first.nab;
+  const firstIhsg = first.ihsg;
+
+  const labels = aggregated.map(d => d.date);
+  const portReturns = aggregated.map(d => {
+    if (firstNab == null || d.nab == null) return null;
+    return ((d.nab / firstNab) - 1) * 100;
+  });
+  const ihsgReturns = aggregated.map(d => {
+    if (firstIhsg == null || d.ihsg == null) return null;
+    return ((d.ihsg / firstIhsg) - 1) * 100;
   });
 
   const ctx = document.getElementById('lineChart').getContext('2d');
@@ -397,18 +414,6 @@ function renderChart() {
           pointRadius: labels.length > 100 ? 0 : 2,
           pointHoverRadius: 4,
           borderWidth: 2,
-        },
-        {
-          label: 'YTD Portfolio',
-          data: ytdReturns,
-          borderColor: '#d29922',
-          backgroundColor: 'rgba(210,153,34,0.08)',
-          fill: true,
-          tension: 0.2,
-          pointRadius: labels.length > 100 ? 0 : 2,
-          pointHoverRadius: 4,
-          borderWidth: 2,
-          borderDash: [5, 3],
         }
       ]
     },
