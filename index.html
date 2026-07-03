@@ -136,7 +136,7 @@
     display: flex; flex-direction: column; justify-content: center;
     align-items: center;
     transition: transform .15s, box-shadow .15s; cursor: default;
-    padding: 6px; min-height: 50px;
+    padding: 6px; min-height: 50px; box-sizing: border-box;
   }
   .treemap-cell:hover {
     transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,.5);
@@ -730,7 +730,7 @@ function renderTreemap() {
       for (const s of row) {
         const cls = 'sector-' + s.sector.replace(/\s+/g, '');
         const w = ((s.pct / rowPct) * 100).toFixed(1);
-        html += `<div class="treemap-cell ${cls}" style="width:${w}%">
+        html += `<div class="treemap-cell ${cls}" style="flex:0 0 ${w}%">
           <div class="sector-name">${s.sector}</div>
           <div class="sector-pct">${s.pct.toFixed(1)}%</div>
           <div class="sector-stocks">${s.stocks.join(', ')}</div>
