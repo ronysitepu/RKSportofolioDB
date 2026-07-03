@@ -160,7 +160,7 @@
   .sector-Financial     { background: linear-gradient(135deg, #8250df, #a371f7); }
   .sector-Mining        { background: linear-gradient(135deg, #d29922, #e3b341); }
   .sector-Infrastructure { background: linear-gradient(135deg, #1b7c83, #56d4dd); }
-  .sector-Cash          { background: linear-gradient(135deg, #484f58, #6e7681); }
+  .sector-Cash          { background: linear-gradient(135deg, #2ea043, #3fb950); }
 
   /* Loading / Error states */
   .loading {
@@ -288,16 +288,22 @@ function normalizeHistorical(hist) {
 }
 
 function aggregateData(data,mode){
-  if (mode === 'weekly') return data;
-
   const map = {};
   for (const d of data) {
     const dt = new Date(d.date + 'T00:00:00');
     let key;
-    if (mode === 'monthly') {
-      key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+    if (mode === 'weekly') {
+      // ISO week key: move to Thursday of same week, then compute week number
+      const t = new Date(dt);
+      t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+      const yr = t.getFullYear();
+      const jan1 = new Date(yr, 0, 1);
+      const wk = Math.ceil((((t - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+      key = yr + '-W' + String(wk).padStart(2, '0');
+    } else if (mode === 'monthly') {
+      key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
     } else {
-      key = `${dt.getFullYear()}`;
+      key = '' + dt.getFullYear();
     }
     // Keep the last entry for each period (most recent data)
     map[key] = d;
@@ -567,7 +573,7 @@ function renderChart() {
         }
       },
       layout: {
-        padding: { bottom: 6 }
+        padding: { right: 65, bottom: 6 }
       },
       scales: {
         x: {
@@ -597,40 +603,45 @@ function renderTreemap() {
   const container = document.getElementById('treemap');
   const sectors = rawData.sectors;
 
-  // Sort by percentage descending
-  const sorted = [...sectors].sort((a, b) => b.pct - a.pct);
+  // Cash always first, then sort rest by pct desc
+  let cash = sectors.filter(s => s.sector === 'Cash');
+  let others = sectors.filter(s => s.sector !== 'Cash').sort((a, b) => b.pct - a.pct);
+  const sorted = [...cash, ...others];
 
-  // Simple treemap: arrange into rows by relative size
-  // Strategy: big sectors get their own row, smaller ones share
+  // Squarified treemap: arrange into rows
+  // Each row fills the full width, cell width proportional to its % within the row
   const totalPct = sorted.reduce((s, x) => s + x.pct, 0);
 
   let html = '';
   let remaining = [...sorted];
-  let totalArea = totalPct;
 
   while (remaining.length > 0) {
+    // Determine how many items fit in this row
+    // Aim for roughly square cells: add items until width/height ratio > 1
     const row = [];
     let rowPct = 0;
-    const targetRowPct = totalArea / Math.ceil(remaining.length / 2);
 
-    for (let i = 0; i < remaining.length; i++) {
-      if (rowPct + remaining[i].pct <= targetRowPct * 1.5 || row.length === 0) {
-        row.push(remaining[i]);
-        rowPct += remaining[i].pct;
-      } else {
-        break;
+    // Take first item (always starts a row)
+    row.push(remaining[0]);
+    rowPct = remaining[0].pct;
+
+    // Try adding more items, checking aspect ratio
+    for (let i = 1; i < remaining.length; i++) {
+      const testPct = rowPct + remaining[i].pct;
+      const rowHeight = rowPct / totalPct;
+      // Worst aspect ratio in the row
+      // simple heuristic: if largest cell in row would be too wide, stop
+      if (i === 1) {
+        // Check if adding second item improves aspect ratio
+        const ratio = testPct / rowPct; // how much bigger the first would be
+        if (ratio > 2.5) break; // first item dominates, keep it alone
       }
+      row.push(remaining[i]);
+      rowPct = testPct;
     }
 
-    // If only 1 item left or only 1 in row, take all remaining
-    if (row.length === 0 && remaining.length > 0) {
-      row.push(remaining.shift());
-      rowPct = row[0].pct;
-    } else {
-      remaining = remaining.slice(row.length);
-    }
-
-    totalArea -= rowPct;
+    if (row.length === 0 || rowPct === 0) break;
+    remaining = remaining.slice(row.length);
 
     html += '<div class="treemap-row">';
     for (const sector of row) {
