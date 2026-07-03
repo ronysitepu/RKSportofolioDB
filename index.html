@@ -423,9 +423,9 @@ function renderChart() {
       ctx.save();
 
       // ── 1. Year separator lines ──
-      ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+      ctx.strokeStyle = 'rgba(139,148,158,0.7)';
       ctx.lineWidth = 1;
-      ctx.setLineDash([3, 4]);
+      ctx.setLineDash([]);
       let prevYear = labels[0].slice(0, 4);
       for (let i = 1; i < labels.length; i++) {
         const yr = labels[i].slice(0, 4);
@@ -583,7 +583,7 @@ function renderChart() {
             font: { size: 9 },
             callback() { return ''; }
           },
-          grid: { color: 'rgba(48,54,61,0.4)' }
+          grid: { display: false }
         },
         y: {
           ticks: {
