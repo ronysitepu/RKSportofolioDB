@@ -125,18 +125,18 @@
   /* Treemap */
   .treemap-container {
     width: 100%; display: flex; flex-direction: column; gap: 4px;
-    min-height: 300px;
+    height: 420px;
   }
   .treemap-row {
     display: flex; gap: 4px; width: 100%;
-    flex: 1;
+    min-height: 0;
   }
   .treemap-cell {
     position: relative; border-radius: 6px; overflow: hidden;
     display: flex; flex-direction: column; justify-content: center;
     align-items: center;
     transition: transform .15s, box-shadow .15s; cursor: default;
-    padding: 8px;
+    padding: 6px; min-height: 50px;
   }
   .treemap-cell:hover {
     transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,.5);
@@ -401,7 +401,6 @@ function renderBarChart(ctx, data, range) {
     const y = yearly[yr];
     return ((y.last.ihsg / y.first.ihsg) - 1) * 100;
   });
-  const gapData = years.map((yr, i) => portData[i] - ihsgData[i]);
 
   chartInstance = new Chart(ctx, {
     type: 'bar',
@@ -410,7 +409,6 @@ function renderBarChart(ctx, data, range) {
       datasets: [
         { label: 'Portfolio', data: portData, backgroundColor: '#3fb950', borderRadius: 4 },
         { label: 'IHSG', data: ihsgData, backgroundColor: '#58a6ff', borderRadius: 4 },
-        { label: 'Gap', data: gapData, backgroundColor: '#d29922', borderRadius: 4 },
       ]
     },
     options: {
@@ -433,12 +431,60 @@ function renderBarChart(ctx, data, range) {
           grid: { display: false }
         },
         y: {
-          ticks: { color: '#8b949e', callback: v => v + '%', font: { size: 11 } },
+          ticks: { display: false },
           grid: { color: 'rgba(48,54,61,0.4)' }
         }
       },
-      layout: { padding: { right: 20, bottom: 6 } }
-    }
+      layout: { padding: { top: 30, right: 20, bottom: 6 } }
+    },
+    plugins: [{
+      id: 'barLabels',
+      afterDraw(chart) {
+        const c = chart.ctx;
+        c.save();
+        const meta0 = chart.getDatasetMeta(0);
+        const meta1 = chart.getDatasetMeta(1);
+        if (!meta0.data || !meta1.data) { c.restore(); return; }
+
+        for (let i = 0; i < meta0.data.length; i++) {
+          const pBar = meta0.data[i];
+          const iBar = meta1.data[i];
+          const pVal = chart.data.datasets[0].data[i];
+          const iVal = chart.data.datasets[1].data[i];
+
+          // Portfolio bar label: ▲ value%
+          if (pBar && pBar.y != null && pVal != null) {
+            c.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
+            c.fillStyle = '#3fb950';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText('▲ ' + (pVal >= 0 ? '+' : '') + pVal.toFixed(1) + '%', pBar.x, pBar.y - 4);
+          }
+
+          // IHSG bar label: ● value%
+          if (iBar && iBar.y != null && iVal != null) {
+            c.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
+            c.fillStyle = '#58a6ff';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText('● ' + (iVal >= 0 ? '+' : '') + iVal.toFixed(1) + '%', iBar.x, iBar.y - 4);
+          }
+
+          // Gap indicator above the higher bar
+          if (pVal != null && iVal != null && pBar && iBar) {
+            const gap = pVal - iVal;
+            const topY = Math.min(pBar.y, iBar.y);
+            c.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+            c.fillStyle = gap >= 0 ? '#3fb950' : '#f85149';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            const gLabel = (gap >= 0 ? '▲' : '▼') + ' ' + (gap >= 0 ? '+' : '') + gap.toFixed(1) + '%';
+            c.fillText(gLabel, (pBar.x + iBar.x) / 2, topY - 22);
+          }
+        }
+        c.restore();
+      }
+    }]
   });
 }
 
@@ -649,7 +695,7 @@ function renderTreemap() {
     const sectorClass = 'sector-' + sector.sector.replace(/\s+/g, '');
     const stocksStr = sector.stocks.join(', ');
     html += `
-      <div class="treemap-row" style="flex:${sector.pct}">
+      <div class="treemap-row" style="flex:${sector.pct} 1 0">
         <div class="treemap-cell ${sectorClass}" style="width:100%">
           <div class="sector-name">${sector.sector}</div>
           <div class="sector-pct">${sector.pct.toFixed(1)}%</div>
