@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-07-15T11:05:42Z",
+  "generated_at": "2026-07-16T11:06:05Z",
   "latest": {
     "date": "2026-07-17",
-    "nab": 88939.0,
-    "ihsg": 6042.0,
-    "ret_inception": 1335.9,
-    "ihsg_inception": -2.5,
+    "nab": 89319.0,
+    "ihsg": 6108.0,
+    "ret_inception": 1342.0,
+    "ihsg_inception": -1.4,
     "cagr": 42.4,
     "leverage": 17.0,
-    "asset_value": 9143.0,
-    "ytd_ret": 64.5,
-    "cash_pct": 6.08,
+    "asset_value": 9182.0,
+    "ytd_ret": 65.2,
+    "cash_pct": 6.87,
     "total_stock_pct": 100.0,
     "stocks_count": 10
   },
@@ -18,32 +18,32 @@
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 66.0
+      "pct": 65.73
     },
     {
       "ticker": "ESSA",
       "sector": "Manufacture",
-      "pct": 11.8
+      "pct": 11.56
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 7.16
+      "pct": 7.24
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 4.47
+      "pct": 4.61
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 2.68
+      "pct": 2.72
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 2.37
+      "pct": 2.42
     },
     {
       "ticker": "AVIA",
@@ -58,25 +58,25 @@
     {
       "ticker": "DGWG",
       "sector": "Manufacture",
-      "pct": 1.34
+      "pct": 1.37
     },
     {
       "ticker": "AMMN",
       "sector": "Mining",
-      "pct": 3.64
+      "pct": 3.81
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 66.0,
+      "pct": 65.73,
       "stocks": [
         "ADES"
       ]
     },
     {
       "sector": "Manufacture",
-      "pct": 13.46,
+      "pct": 13.25,
       "stocks": [
         "ESSA",
         "AVIA",
@@ -85,14 +85,14 @@
     },
     {
       "sector": "Energy",
-      "pct": 7.16,
+      "pct": 7.24,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Financial",
-      "pct": 6.84,
+      "pct": 7.03,
       "stocks": [
         "BMRI",
         "BBCA"
@@ -100,7 +100,7 @@
     },
     {
       "sector": "Mining",
-      "pct": 6.32,
+      "pct": 6.53,
       "stocks": [
         "BRMS",
         "AMMN"
@@ -115,7 +115,7 @@
     },
     {
       "sector": "Cash",
-      "pct": 6.08,
+      "pct": 6.87,
       "stocks": [
         "Cash"
       ]
@@ -8644,15 +8644,15 @@
     ],
     [
       "2026-07-17",
-      88939.0,
-      6042.0,
-      1335.9,
-      -2.5,
+      89319.0,
+      6108.0,
+      1342.0,
+      -1.4,
       42.4,
       17.0,
-      9143.0,
-      64.5,
-      -30.1
+      9182.0,
+      65.2,
+      -29.4
     ]
   ]
 }
