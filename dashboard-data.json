@@ -1,79 +1,74 @@
 {
-  "generated_at": "2026-09-01T11:05:59Z",
+  "generated_at": "2026-09-02T11:05:21Z",
   "latest": {
     "date": "2026-09-04",
-    "nab": 90203.0,
-    "ihsg": 6600.0,
-    "ret_inception": 1356.3,
-    "ihsg_inception": 6.6,
-    "cagr": 41.8,
+    "nab": 89925.0,
+    "ihsg": 6596.0,
+    "ret_inception": 1351.8,
+    "ihsg_inception": 6.5,
+    "cagr": 41.7,
     "leverage": 12.8,
-    "asset_value": 9280.0,
-    "ytd_ret": 66.8,
-    "cash_pct": 8.3,
+    "asset_value": 9252.0,
+    "ytd_ret": 66.3,
+    "cash_pct": 14.66,
     "total_stock_pct": 100.0,
-    "stocks_count": 8
+    "stocks_count": 7
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 66.14
-    },
-    {
-      "ticker": "ESSA",
-      "sector": "Manufacture",
-      "pct": 7.15
+      "pct": 71.18
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 10.6
+      "pct": 11.47
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 4.89
+      "pct": 5.34
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 3.76
+      "pct": 4.01
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 2.72
+      "pct": 2.97
     },
     {
       "ticker": "MTEL",
       "sector": "Infrastructure",
-      "pct": 0.25
+      "pct": 0.27
     },
     {
       "ticker": "AMMN",
       "sector": "Mining",
-      "pct": 4.49
+      "pct": 4.76
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 66.14,
+      "pct": 71.18,
       "stocks": [
         "ADES"
       ]
     },
     {
       "sector": "Energy",
-      "pct": 10.6,
+      "pct": 11.47,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Mining",
-      "pct": 8.25,
+      "pct": 8.77,
       "stocks": [
         "BRMS",
         "AMMN"
@@ -81,29 +76,22 @@
     },
     {
       "sector": "Financial",
-      "pct": 7.61,
+      "pct": 8.31,
       "stocks": [
         "BMRI",
         "BBCA"
       ]
     },
     {
-      "sector": "Manufacture",
-      "pct": 7.15,
-      "stocks": [
-        "ESSA"
-      ]
-    },
-    {
       "sector": "Infrastructure",
-      "pct": 0.25,
+      "pct": 0.27,
       "stocks": [
         "MTEL"
       ]
     },
     {
       "sector": "Cash",
-      "pct": 8.3,
+      "pct": 14.66,
       "stocks": [
         "Cash"
       ]
@@ -8716,14 +8704,14 @@
     ],
     [
       "2026-09-04",
-      90203.0,
-      6600.0,
-      1356.3,
-      6.6,
-      41.8,
+      89925.0,
+      6596.0,
+      1351.8,
+      6.5,
+      41.7,
       12.8,
-      9280.0,
-      66.8,
+      9252.0,
+      66.3,
       -23.7
     ]
   ]
