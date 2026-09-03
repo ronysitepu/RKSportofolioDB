@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-09-02T11:05:21Z",
+  "generated_at": "2026-09-03T11:05:46Z",
   "latest": {
     "date": "2026-09-04",
-    "nab": 89925.0,
-    "ihsg": 6596.0,
-    "ret_inception": 1351.8,
-    "ihsg_inception": 6.5,
+    "nab": 90082.0,
+    "ihsg": 6668.0,
+    "ret_inception": 1354.3,
+    "ihsg_inception": 7.7,
     "cagr": 41.7,
     "leverage": 12.8,
-    "asset_value": 9252.0,
-    "ytd_ret": 66.3,
-    "cash_pct": 14.66,
+    "asset_value": 9268.0,
+    "ytd_ret": 66.6,
+    "cash_pct": 18.15,
     "total_stock_pct": 100.0,
     "stocks_count": 7
   },
@@ -18,27 +18,27 @@
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 71.18
+      "pct": 70.83
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 11.47
+      "pct": 11.45
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 5.34
+      "pct": 5.45
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 4.01
+      "pct": 4.06
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 2.97
+      "pct": 3.01
     },
     {
       "ticker": "MTEL",
@@ -48,27 +48,27 @@
     {
       "ticker": "AMMN",
       "sector": "Mining",
-      "pct": 4.76
+      "pct": 4.93
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 71.18,
+      "pct": 70.83,
       "stocks": [
         "ADES"
       ]
     },
     {
       "sector": "Energy",
-      "pct": 11.47,
+      "pct": 11.45,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Mining",
-      "pct": 8.77,
+      "pct": 8.99,
       "stocks": [
         "BRMS",
         "AMMN"
@@ -76,7 +76,7 @@
     },
     {
       "sector": "Financial",
-      "pct": 8.31,
+      "pct": 8.46,
       "stocks": [
         "BMRI",
         "BBCA"
@@ -91,7 +91,7 @@
     },
     {
       "sector": "Cash",
-      "pct": 14.66,
+      "pct": 18.15,
       "stocks": [
         "Cash"
       ]
@@ -8704,15 +8704,15 @@
     ],
     [
       "2026-09-04",
-      89925.0,
-      6596.0,
-      1351.8,
-      6.5,
+      90082.0,
+      6668.0,
+      1354.3,
+      7.7,
       41.7,
       12.8,
-      9252.0,
-      66.3,
-      -23.7
+      9268.0,
+      66.6,
+      -22.9
     ]
   ]
 }
