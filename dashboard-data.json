@@ -1,97 +1,91 @@
 {
-  "generated_at": "2026-09-08T11:05:43Z",
+  "generated_at": "2026-09-09T11:06:05Z",
   "latest": {
     "date": "2026-09-11",
-    "nab": 90446.0,
-    "ihsg": 6686.0,
-    "ret_inception": 1360.2,
-    "ihsg_inception": 8.0,
-    "cagr": 41.7,
-    "leverage": 12.7,
-    "asset_value": 9305.0,
-    "ytd_ret": 67.3,
-    "cash_pct": 18.07,
-    "total_stock_pct": 100.01,
-    "stocks_count": 7
+    "nab": 89816.0,
+    "ihsg": 6678.0,
+    "ret_inception": 1350.1,
+    "ihsg_inception": 7.8,
+    "cagr": 41.6,
+    "leverage": 12.8,
+    "asset_value": 9240.0,
+    "ytd_ret": 66.1,
+    "cash_pct": 24.74,
+    "total_stock_pct": 99.99,
+    "stocks_count": 6
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 69.76
+      "pct": 73.74
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 12.51
+      "pct": 13.06
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 5.4
+      "pct": 5.68
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 3.93
+      "pct": 4.15
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 2.96
+      "pct": 3.07
     },
     {
       "ticker": "MTEL",
       "sector": "Infrastructure",
-      "pct": 0.28
-    },
-    {
-      "ticker": "AMMN",
-      "sector": "Mining",
-      "pct": 5.17
+      "pct": 0.29
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 69.76,
+      "pct": 73.74,
       "stocks": [
         "ADES"
       ]
     },
     {
       "sector": "Energy",
-      "pct": 12.51,
+      "pct": 13.06,
       "stocks": [
         "BUMI"
       ]
     },
     {
-      "sector": "Mining",
-      "pct": 9.1,
-      "stocks": [
-        "BRMS",
-        "AMMN"
-      ]
-    },
-    {
       "sector": "Financial",
-      "pct": 8.36,
+      "pct": 8.75,
       "stocks": [
         "BMRI",
         "BBCA"
       ]
     },
     {
+      "sector": "Mining",
+      "pct": 4.15,
+      "stocks": [
+        "BRMS"
+      ]
+    },
+    {
       "sector": "Infrastructure",
-      "pct": 0.28,
+      "pct": 0.29,
       "stocks": [
         "MTEL"
       ]
     },
     {
       "sector": "Cash",
-      "pct": 18.07,
+      "pct": 24.74,
       "stocks": [
         "Cash"
       ]
@@ -8541,7 +8535,7 @@
       880.6,
       -1.1,
       36.1,
-      12.7,
+      12.8,
       6241.0,
       12.3,
       -29.1
@@ -8553,7 +8547,7 @@
       848.2,
       -9.7,
       35.4,
-      12.7,
+      12.8,
       6035.0,
       8.6,
       -35.3
@@ -8577,7 +8571,7 @@
       1075.3,
       -0.3,
       39.1,
-      12.7,
+      12.8,
       7484.0,
       34.6,
       -28.6
@@ -8716,15 +8710,15 @@
     ],
     [
       "2026-09-11",
-      90446.0,
-      6686.0,
-      1360.2,
-      8.0,
-      41.7,
-      12.7,
-      9305.0,
-      67.3,
-      -22.7
+      89816.0,
+      6678.0,
+      1350.1,
+      7.8,
+      41.6,
+      12.8,
+      9240.0,
+      66.1,
+      -22.8
     ]
   ]
 }
