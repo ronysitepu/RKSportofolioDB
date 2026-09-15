@@ -1,69 +1,69 @@
 {
-  "generated_at": "2026-09-14T11:06:29Z",
+  "generated_at": "2026-09-15T11:05:24Z",
   "latest": {
     "date": "2026-09-18",
-    "nab": 89681.0,
-    "ihsg": 6535.0,
-    "ret_inception": 1347.9,
-    "ihsg_inception": 5.5,
+    "nab": 89564.0,
+    "ihsg": 6461.0,
+    "ret_inception": 1346.0,
+    "ihsg_inception": 4.3,
     "cagr": 41.4,
     "leverage": 12.8,
-    "asset_value": 9226.0,
-    "ytd_ret": 65.8,
-    "cash_pct": 23.4,
-    "total_stock_pct": 99.99,
+    "asset_value": 9214.0,
+    "ytd_ret": 65.6,
+    "cash_pct": 23.43,
+    "total_stock_pct": 100.0,
     "stocks_count": 6
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 74.61
+      "pct": 74.72
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 12.12
+      "pct": 12.14
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 5.69
+      "pct": 5.57
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 4.26
+      "pct": 4.29
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 3.03
+      "pct": 2.99
     },
     {
       "ticker": "MTEL",
       "sector": "Infrastructure",
-      "pct": 0.28
+      "pct": 0.29
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 74.61,
+      "pct": 74.72,
       "stocks": [
         "ADES"
       ]
     },
     {
       "sector": "Energy",
-      "pct": 12.12,
+      "pct": 12.14,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Financial",
-      "pct": 8.72,
+      "pct": 8.56,
       "stocks": [
         "BMRI",
         "BBCA"
@@ -71,21 +71,21 @@
     },
     {
       "sector": "Mining",
-      "pct": 4.26,
+      "pct": 4.29,
       "stocks": [
         "BRMS"
       ]
     },
     {
       "sector": "Infrastructure",
-      "pct": 0.28,
+      "pct": 0.29,
       "stocks": [
         "MTEL"
       ]
     },
     {
       "sector": "Cash",
-      "pct": 23.4,
+      "pct": 23.43,
       "stocks": [
         "Cash"
       ]
@@ -8722,15 +8722,15 @@
     ],
     [
       "2026-09-18",
-      89681.0,
-      6535.0,
-      1347.9,
-      5.5,
+      89564.0,
+      6461.0,
+      1346.0,
+      4.3,
       41.4,
       12.8,
-      9226.0,
-      65.8,
-      -24.4
+      9214.0,
+      65.6,
+      -25.3
     ]
   ]
 }
