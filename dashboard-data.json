@@ -1,64 +1,64 @@
 {
-  "generated_at": "2026-09-29T11:06:01Z",
+  "generated_at": "2026-09-30T11:05:26Z",
   "latest": {
     "date": "2026-10-02",
-    "nab": 94832.0,
-    "ihsg": 6122.0,
-    "ret_inception": 1431.0,
-    "ihsg_inception": -1.2,
+    "nab": 94708.0,
+    "ihsg": 6071.0,
+    "ret_inception": 1429.0,
+    "ihsg_inception": -2.0,
     "cagr": 42.2,
     "leverage": 12.0,
-    "asset_value": 9760.0,
-    "ytd_ret": 75.4,
-    "cash_pct": 22.42,
-    "total_stock_pct": 99.99,
+    "asset_value": 9747.0,
+    "ytd_ret": 75.1,
+    "cash_pct": 22.46,
+    "total_stock_pct": 100.0,
     "stocks_count": 5
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 79.34
+      "pct": 79.51
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 9.77
+      "pct": 9.67
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 4.89
+      "pct": 4.87
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 3.28
+      "pct": 3.26
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 2.71
+      "pct": 2.69
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 79.34,
+      "pct": 79.51,
       "stocks": [
         "ADES"
       ]
     },
     {
       "sector": "Energy",
-      "pct": 9.77,
+      "pct": 9.67,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Financial",
-      "pct": 7.6,
+      "pct": 7.56,
       "stocks": [
         "BMRI",
         "BBCA"
@@ -66,14 +66,14 @@
     },
     {
       "sector": "Mining",
-      "pct": 3.28,
+      "pct": 3.26,
       "stocks": [
         "BRMS"
       ]
     },
     {
       "sector": "Cash",
-      "pct": 22.42,
+      "pct": 22.46,
       "stocks": [
         "Cash"
       ]
@@ -8734,15 +8734,15 @@
     ],
     [
       "2026-10-02",
-      94832.0,
-      6122.0,
-      1431.0,
-      -1.2,
+      94708.0,
+      6071.0,
+      1429.0,
+      -2.0,
       42.2,
       12.0,
-      9760.0,
-      75.4,
-      -29.2
+      9747.0,
+      75.1,
+      -29.8
     ]
   ]
 }
