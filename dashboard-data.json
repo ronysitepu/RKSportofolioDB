@@ -1,60 +1,60 @@
 {
-  "generated_at": "2026-10-13T14:01:32Z",
+  "generated_at": "2026-10-14T11:05:46Z",
   "latest": {
     "date": "2026-10-16",
-    "nab": 93915.0,
-    "ihsg": 5926.0,
-    "ret_inception": 1416.2,
-    "ihsg_inception": -4.3,
-    "cagr": 41.8,
-    "leverage": 11.8,
-    "asset_value": 9563.0,
-    "ytd_ret": 73.7,
-    "cash_pct": 17.38,
-    "total_stock_pct": 100.0,
+    "nab": 92250.0,
+    "ihsg": 5943.0,
+    "ret_inception": 1389.4,
+    "ihsg_inception": -4.1,
+    "cagr": 41.4,
+    "leverage": 12.0,
+    "asset_value": 9394.0,
+    "ytd_ret": 70.6,
+    "cash_pct": 17.7,
+    "total_stock_pct": 100.01,
     "stocks_count": 7
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 77.1
+      "pct": 76.72
     },
     {
       "ticker": "AMMN",
       "sector": "Mining",
-      "pct": 1.41
+      "pct": 1.43
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 9.04
+      "pct": 9.1
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 4.75
+      "pct": 4.81
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 4.21
+      "pct": 4.29
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 3.22
+      "pct": 3.38
     },
     {
       "ticker": "CAMP",
       "sector": "Consumer",
-      "pct": 0.27
+      "pct": 0.28
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 77.37,
+      "pct": 77.0,
       "stocks": [
         "ADES",
         "CAMP"
@@ -62,14 +62,14 @@
     },
     {
       "sector": "Energy",
-      "pct": 9.04,
+      "pct": 9.1,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Financial",
-      "pct": 7.97,
+      "pct": 8.19,
       "stocks": [
         "BMRI",
         "BBCA"
@@ -77,7 +77,7 @@
     },
     {
       "sector": "Mining",
-      "pct": 5.62,
+      "pct": 5.72,
       "stocks": [
         "AMMN",
         "BRMS"
@@ -85,7 +85,7 @@
     },
     {
       "sector": "Cash",
-      "pct": 17.38,
+      "pct": 17.7,
       "stocks": [
         "Cash"
       ]
@@ -8535,7 +8535,7 @@
       880.6,
       -1.1,
       36.1,
-      11.8,
+      12.0,
       6241.0,
       12.3,
       -29.1
@@ -8547,7 +8547,7 @@
       848.2,
       -9.7,
       35.4,
-      11.8,
+      12.0,
       6035.0,
       8.6,
       -35.3
@@ -8571,7 +8571,7 @@
       1075.3,
       -0.3,
       39.1,
-      11.8,
+      12.0,
       7484.0,
       34.6,
       -28.6
@@ -8770,15 +8770,15 @@
     ],
     [
       "2026-10-16",
-      93915.0,
-      5926.0,
-      1416.2,
-      -4.3,
-      41.8,
-      11.8,
-      9563.0,
-      73.7,
-      -31.5
+      92250.0,
+      5943.0,
+      1389.4,
+      -4.1,
+      41.4,
+      12.0,
+      9394.0,
+      70.6,
+      -31.3
     ]
   ]
 }
