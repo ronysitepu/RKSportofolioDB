@@ -1,75 +1,88 @@
 {
-  "generated_at": "2026-10-15T11:05:13Z",
+  "generated_at": "2026-10-16T11:05:32Z",
   "latest": {
     "date": "2026-10-16",
-    "nab": 90842.0,
-    "ihsg": 5864.0,
-    "ret_inception": 1366.6,
-    "ihsg_inception": -5.3,
-    "cagr": 41.2,
-    "leverage": 12.1,
-    "asset_value": 9250.0,
-    "ytd_ret": 68.0,
-    "cash_pct": 16.19,
-    "total_stock_pct": 99.98,
-    "stocks_count": 7
+    "nab": 87570.0,
+    "ihsg": 5185.0,
+    "ret_inception": 1313.8,
+    "ihsg_inception": -16.3,
+    "cagr": 40.5,
+    "leverage": 12.5,
+    "asset_value": 8917.0,
+    "ytd_ret": 61.9,
+    "cash_pct": 7.45,
+    "total_stock_pct": 100.0,
+    "stocks_count": 11
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 75.61
+      "pct": 72.1
     },
     {
       "ticker": "AMMN",
       "sector": "Mining",
-      "pct": 1.45
+      "pct": 3.15
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 8.66
+      "pct": 7.06
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 4.83
+      "pct": 3.93
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 5.46
+      "pct": 4.44
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 3.35
+      "pct": 6.0
     },
     {
       "ticker": "CAMP",
       "sector": "Consumer",
-      "pct": 0.62
+      "pct": 0.69
+    },
+    {
+      "ticker": "DGWG",
+      "sector": "Manufacture",
+      "pct": 0.31
+    },
+    {
+      "ticker": "ESSA",
+      "sector": "Manufacture",
+      "pct": 1.0
+    },
+    {
+      "ticker": "JSMR",
+      "sector": "Infrastructure",
+      "pct": 0.89
+    },
+    {
+      "ticker": "MTEL",
+      "sector": "Infrastructure",
+      "pct": 0.43
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 76.23,
+      "pct": 72.79,
       "stocks": [
         "ADES",
         "CAMP"
       ]
     },
     {
-      "sector": "Energy",
-      "pct": 8.66,
-      "stocks": [
-        "BUMI"
-      ]
-    },
-    {
       "sector": "Financial",
-      "pct": 8.18,
+      "pct": 9.93,
       "stocks": [
         "BMRI",
         "BBCA"
@@ -77,15 +90,38 @@
     },
     {
       "sector": "Mining",
-      "pct": 6.91,
+      "pct": 7.59,
       "stocks": [
         "AMMN",
         "BRMS"
       ]
     },
     {
+      "sector": "Energy",
+      "pct": 7.06,
+      "stocks": [
+        "BUMI"
+      ]
+    },
+    {
+      "sector": "Infrastructure",
+      "pct": 1.32,
+      "stocks": [
+        "JSMR",
+        "MTEL"
+      ]
+    },
+    {
+      "sector": "Manufacture",
+      "pct": 1.31,
+      "stocks": [
+        "DGWG",
+        "ESSA"
+      ]
+    },
+    {
       "sector": "Cash",
-      "pct": 16.19,
+      "pct": 7.45,
       "stocks": [
         "Cash"
       ]
@@ -8535,7 +8571,7 @@
       880.6,
       -1.1,
       36.1,
-      12.1,
+      12.5,
       6241.0,
       12.3,
       -29.1
@@ -8547,7 +8583,7 @@
       848.2,
       -9.7,
       35.4,
-      12.1,
+      12.5,
       6035.0,
       8.6,
       -35.3
@@ -8571,7 +8607,7 @@
       1075.3,
       -0.3,
       39.1,
-      12.1,
+      12.5,
       7484.0,
       34.6,
       -28.6
@@ -8770,15 +8806,15 @@
     ],
     [
       "2026-10-16",
-      90842.0,
-      5864.0,
-      1366.6,
-      -5.3,
-      41.2,
-      12.1,
-      9250.0,
-      68.0,
-      -32.2
+      87570.0,
+      5185.0,
+      1313.8,
+      -16.3,
+      40.5,
+      12.5,
+      8917.0,
+      61.9,
+      -40.0
     ]
   ]
 }
