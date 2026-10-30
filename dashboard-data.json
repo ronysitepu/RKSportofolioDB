@@ -1,70 +1,70 @@
 {
-  "generated_at": "2026-10-29T11:05:21Z",
+  "generated_at": "2026-10-30T11:05:20Z",
   "latest": {
     "date": "2026-10-30",
-    "nab": 84916.0,
-    "ihsg": 5098.0,
-    "ret_inception": 1270.9,
-    "ihsg_inception": -17.7,
-    "cagr": 39.7,
-    "leverage": 12.9,
-    "asset_value": 8647.0,
-    "ytd_ret": 57.0,
-    "cash_pct": 5.73,
-    "total_stock_pct": 94.29,
+    "nab": 83033.0,
+    "ihsg": 5057.0,
+    "ret_inception": 1240.5,
+    "ihsg_inception": -18.4,
+    "cagr": 39.3,
+    "leverage": 13.0,
+    "asset_value": 8458.0,
+    "ytd_ret": 53.5,
+    "cash_pct": 5.17,
+    "total_stock_pct": 94.82,
     "stocks_count": 9
   },
   "stocks": [
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 67.47
-    },
-    {
-      "ticker": "AMMN",
-      "sector": "Mining",
-      "pct": 3.02
+      "pct": 67.66
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 6.1
-    },
-    {
-      "ticker": "BMRI",
-      "sector": "Financial",
-      "pct": 4.87
-    },
-    {
-      "ticker": "BRMS",
-      "sector": "Mining",
-      "pct": 3.59
+      "pct": 6.12
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 5.48
+      "pct": 5.63
     },
     {
-      "ticker": "CAMP",
-      "sector": "Consumer",
-      "pct": 0.64
+      "ticker": "BMRI",
+      "sector": "Financial",
+      "pct": 4.97
+    },
+    {
+      "ticker": "BRMS",
+      "sector": "Mining",
+      "pct": 3.41
+    },
+    {
+      "ticker": "AMMN",
+      "sector": "Mining",
+      "pct": 3.0
     },
     {
       "ticker": "DGWG",
       "sector": "Manufacture",
-      "pct": 2.1
+      "pct": 2.37
     },
     {
       "ticker": "ESSA",
       "sector": "Manufacture",
-      "pct": 1.02
+      "pct": 1.03
+    },
+    {
+      "ticker": "CAMP",
+      "sector": "Consumer",
+      "pct": 0.63
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 68.11,
+      "pct": 68.29,
       "stocks": [
         "ADES",
         "CAMP"
@@ -72,30 +72,30 @@
     },
     {
       "sector": "Financial",
-      "pct": 10.35,
+      "pct": 10.6,
       "stocks": [
-        "BMRI",
-        "BBCA"
+        "BBCA",
+        "BMRI"
       ]
     },
     {
       "sector": "Mining",
-      "pct": 6.61,
+      "pct": 6.41,
       "stocks": [
-        "AMMN",
-        "BRMS"
+        "BRMS",
+        "AMMN"
       ]
     },
     {
       "sector": "Energy",
-      "pct": 6.1,
+      "pct": 6.12,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Manufacture",
-      "pct": 3.12,
+      "pct": 3.4,
       "stocks": [
         "DGWG",
         "ESSA"
@@ -103,7 +103,7 @@
     },
     {
       "sector": "Cash",
-      "pct": 5.73,
+      "pct": 5.17,
       "stocks": [
         "Cash"
       ]
@@ -8553,7 +8553,7 @@
       880.6,
       -1.1,
       36.1,
-      12.9,
+      13.0,
       6241.0,
       12.3,
       -29.1
@@ -8565,7 +8565,7 @@
       848.2,
       -9.7,
       35.4,
-      12.9,
+      13.0,
       6035.0,
       8.6,
       -35.3
@@ -8589,7 +8589,7 @@
       1075.3,
       -0.3,
       39.1,
-      12.9,
+      13.0,
       7484.0,
       34.6,
       -28.6
@@ -8758,39 +8758,39 @@
       0.8,
       41.7,
       12.4,
-      9337.0,
+      9341.0,
       69.6,
       -27.8
     ],
     [
       "2026-10-02",
-      94524.0,
+      94487.0,
       6037.0,
-      1426.1,
+      1425.5,
       -2.5,
       42.1,
       12.1,
       9625.0,
-      74.8,
+      74.7,
       -30.2
     ],
     [
       "2026-10-09",
-      93366.0,
+      93330.0,
       6094.0,
-      1407.4,
+      1406.8,
       -1.6,
       41.8,
       12.2,
       9507.0,
-      72.7,
+      72.6,
       -29.5
     ],
     [
       "2026-10-16",
-      87570.0,
+      87536.0,
       5185.0,
-      1313.8,
+      1313.2,
       -16.3,
       40.5,
       12.5,
@@ -8800,9 +8800,9 @@
     ],
     [
       "2026-10-23",
-      87570.0,
+      87536.0,
       5439.0,
-      1313.8,
+      1313.2,
       -12.2,
       40.4,
       12.5,
@@ -8812,15 +8812,15 @@
     ],
     [
       "2026-10-30",
-      84916.0,
-      5098.0,
-      1270.9,
-      -17.7,
-      39.7,
-      12.9,
-      8647.0,
-      57.0,
-      -41.0
+      83033.0,
+      5057.0,
+      1240.5,
+      -18.4,
+      39.3,
+      13.0,
+      8458.0,
+      53.5,
+      -41.5
     ]
   ]
 }
