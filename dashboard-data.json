@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-09T11:06:17Z",
+  "generated_at": "2026-11-10T11:05:18Z",
   "latest": {
     "date": "2026-11-13",
-    "nab": 75132.0,
-    "ihsg": 5074.0,
-    "ret_inception": 1113.0,
-    "ihsg_inception": -18.1,
-    "cagr": 37.3,
+    "nab": 75296.0,
+    "ihsg": 5126.0,
+    "ret_inception": 1115.6,
+    "ihsg_inception": -17.2,
+    "cagr": 37.4,
     "leverage": 14.3,
-    "asset_value": 7572.0,
-    "ytd_ret": 38.9,
-    "cash_pct": 4.56,
+    "asset_value": 7588.0,
+    "ytd_ret": 39.2,
+    "cash_pct": 4.55,
     "total_stock_pct": 95.45,
     "stocks_count": 9
   },
@@ -18,53 +18,53 @@
     {
       "ticker": "ADES",
       "sector": "Consumer",
-      "pct": 65.57
+      "pct": 65.27
     },
     {
       "ticker": "BUMI",
       "sector": "Energy",
-      "pct": 6.56
+      "pct": 6.78
     },
     {
       "ticker": "BBCA",
       "sector": "Financial",
-      "pct": 6.63
+      "pct": 6.58
     },
     {
       "ticker": "BMRI",
       "sector": "Financial",
-      "pct": 5.46
+      "pct": 5.51
     },
     {
       "ticker": "BRMS",
       "sector": "Mining",
-      "pct": 3.51
+      "pct": 3.46
     },
     {
       "ticker": "AMMN",
       "sector": "Mining",
-      "pct": 3.25
+      "pct": 3.37
     },
     {
       "ticker": "DGWG",
       "sector": "Manufacture",
-      "pct": 2.67
+      "pct": 2.7
     },
     {
       "ticker": "ESSA",
       "sector": "Manufacture",
-      "pct": 1.11
+      "pct": 1.1
     },
     {
       "ticker": "CAMP",
       "sector": "Consumer",
-      "pct": 0.69
+      "pct": 0.68
     }
   ],
   "sectors": [
     {
       "sector": "Consumer",
-      "pct": 66.26,
+      "pct": 65.95,
       "stocks": [
         "ADES",
         "CAMP"
@@ -80,7 +80,7 @@
     },
     {
       "sector": "Mining",
-      "pct": 6.76,
+      "pct": 6.83,
       "stocks": [
         "BRMS",
         "AMMN"
@@ -88,14 +88,14 @@
     },
     {
       "sector": "Energy",
-      "pct": 6.56,
+      "pct": 6.78,
       "stocks": [
         "BUMI"
       ]
     },
     {
       "sector": "Manufacture",
-      "pct": 3.78,
+      "pct": 3.8,
       "stocks": [
         "DGWG",
         "ESSA"
@@ -103,7 +103,7 @@
     },
     {
       "sector": "Cash",
-      "pct": 4.56,
+      "pct": 4.55,
       "stocks": [
         "Cash"
       ]
@@ -8836,15 +8836,15 @@
     ],
     [
       "2026-11-13",
-      75132.0,
-      5074.0,
-      1113.0,
-      -18.1,
-      37.3,
+      75296.0,
+      5126.0,
+      1115.6,
+      -17.2,
+      37.4,
       14.3,
-      7572.0,
-      38.9,
-      -41.3
+      7588.0,
+      39.2,
+      -40.7
     ]
   ]
 }
